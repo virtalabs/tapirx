@@ -1,0 +1,31 @@
+language: go
+go:
+ - "1.9"
+ - "1.10"
+ - "1.11"
+
+addons:
+  apt:
+    packages:
+      - libpcap-dev
+
+notifications:
+  email: true
+  slack:
+    rooms:
+      - virtalabs:ahT3erEITgjJr0yhZFdKbt1o#commits
+    on_success: change
+    on_failure: change
+
+env:
+ - GITREV="${TRAVIS_COMMIT}"
+
+install:
+ - go get -v -u
+ - go get -v -u golang.org/x/lint/golint
+
+script:
+ - go test
+ - test -z "$(gofmt -l -e .)" || (echo "gofmt failed"; false)
+ - LINT="$(golint)"; test -z "$LINT" || (echo "$LINT"; false)
+ - go vet
