@@ -11,11 +11,6 @@ addons:
 
 notifications:
   email: true
-  slack:
-    rooms:
-      - virtalabs:ahT3erEITgjJr0yhZFdKbt1o#commits
-    on_success: change
-    on_failure: change
 
 env:
  - GITREV="${TRAVIS_COMMIT}"
