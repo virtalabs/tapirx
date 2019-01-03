@@ -99,6 +99,20 @@ but it's within reach with a tiny bit of elbow grease:
 (This procedure will become easier once gopacket supports npcap; see
 @google/gopacket#568.)
 
+## Building on Linux
+
+You will need to install `libpcap` development headers, which fortunately are
+in most distributions' main repositories. After you have done so, the quick
+start instructions should work properly.
+
+Ubuntu (or other Debian-based distributions):
+
+    $ sudo apt install libpcap-dev
+
+RHEL7 or CentOS:
+
+    $ sudo yum install libpcap-devel
+
 # Frequently Asked Questions
 
 ## How do I select specific network traffic to monitor?
