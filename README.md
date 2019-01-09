@@ -58,9 +58,10 @@ You can then pass the pcap file directly to Tapirx instead of specifying a netwo
 ## Connecting Tapirx to Other Systems
 
 Tapirx can share data about discovered devices with other systems. For example, you can:
-Leave an instance running for a fixed amount of time to collect a snapshot of active inventory;
-Continuously catalogue devices' MAC and IP addresses along with identification data to maintain a high level of preparedness for security incidents;
-Automatically highlight ePHI devices for HIPAA record keeping.
+
+- Leave an instance running for a fixed amount of time to collect a snapshot of active inventory;
+- Continuously catalogue devices' MAC and IP addresses along with identification data to maintain a high level of preparedness for security incidents; or
+- Automatically highlight ePHI devices for HIPAA record keeping.
 
 Device data can be automatically shared with any tool that offers a REST API. As it discovers devices and identifiers, Tapirx will issue `POST` requests that look like this (in this example, Tapirx spotted an infusion pump on 10.0.0.155 communicating with an EHR via HL7 on port 2575):
 
