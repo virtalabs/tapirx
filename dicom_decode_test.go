@@ -84,6 +84,16 @@ func TestDicomAppLayerGood(t *testing.T) {
 	}
 }
 
+func BenchmarkDicomDecode(b *testing.B) {
+	appBytes := make([]byte, len(goodAppLayerBytes))
+	copy(appBytes, goodAppLayerBytes)
+	appLayer := gopacket.ApplicationLayer(gopacket.Payload(appBytes))
+
+	for i := 0; i < b.N; i++ {
+		dicomDecode(&appLayer)
+	}
+}
+
 var whitespaceTests = []struct {
 	callingTitle string
 	expectedID   string
