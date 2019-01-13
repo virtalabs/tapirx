@@ -101,3 +101,11 @@ func TestHL7IdentFromPRT10(t *testing.T) {
 		t.Errorf("Failed to parse identifier from string; got '%s'", parsed)
 	}
 }
+
+func BenchmarkHL7IdentFromPRT10(b *testing.B) {
+	str := (okHl7Header +
+		"PRT|A|B|C|D|E|F|G|H|I|Grospira Peach B+\r")
+	for i := 0; i < b.N; i++ {
+		identFromString(str)
+	}
+}
