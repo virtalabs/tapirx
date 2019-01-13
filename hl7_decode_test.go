@@ -69,10 +69,35 @@ func identFromString(s string, t *testing.T) string {
 	return ident
 }
 
-func TestHL7IdentFromPRT(t *testing.T) {
-	t.Skip("TODO")
-	parsed := identFromString("MSH|^~\\&|PRT|A|B|C|D|E|F|G|H|I|Hospira Plum A+|", t)
-	if parsed != "Hospira Plum A+" {
+// Well-formed message header segment to be prepended to messages for testing
+const okHl7Header = ("" +
+	// Header and delimiter
+	"MSH|^~\\&|" +
+
+	// Envelope information
+	"Sender|Sender Facility|" +
+	"Receiver|Receiver Facility|" +
+
+	// Timestamp (YYYYMMDDHHMM) + Security (blank)
+	"201801131030||" +
+
+	// Message type: ORU = observations & results
+	"ORU^R01|" +
+
+	// Control ID
+	"CNTRL-12345|" +
+
+	// Processing ID
+	"P|" +
+
+	// Version ID + segment delimiter (carriage return)
+	"2.4\r")
+
+func TestHL7IdentFromPRT10(t *testing.T) {
+	str := (okHl7Header +
+		"PRT|A|B|C|D|E|F|G|H|I|Grospira Peach B+\r")
+	parsed := identFromString(str, t)
+	if parsed != "Grospira Peach B+" {
 		t.Errorf("Failed to parse identifier from string; got '%s'", parsed)
 	}
 }
