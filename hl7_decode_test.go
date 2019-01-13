@@ -70,7 +70,7 @@ func identFromString(s string) string {
 }
 
 // Well-formed message header segment to be prepended to messages for testing
-const okHl7Header = ("" +
+const okHL7Header = ("" +
 	// Header and delimiter
 	"MSH|^~\\&|" +
 
@@ -94,7 +94,7 @@ const okHl7Header = ("" +
 	"2.4\r")
 
 func TestHL7IdentFromPRT10(t *testing.T) {
-	str := (okHl7Header +
+	str := (okHL7Header +
 		"PRT|A|B|C|D|E|F|G|H|I|Grospira Peach B+\r")
 	parsed := identFromString(str)
 	if parsed != "Grospira Peach B+" {
@@ -103,7 +103,7 @@ func TestHL7IdentFromPRT10(t *testing.T) {
 }
 
 func BenchmarkHL7IdentFromPRT10(b *testing.B) {
-	str := (okHl7Header +
+	str := (okHL7Header +
 		"PRT|A|B|C|D|E|F|G|H|I|Grospira Peach B+\r")
 	for i := 0; i < b.N; i++ {
 		identFromString(str)
