@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/gopacket"
+	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
 
 	// import layers to run its init function
@@ -47,4 +48,14 @@ func TestPacketParseSimple(t *testing.T) {
 			stats.TotalPacketCount, numPackets)
 	}
 
+}
+
+// Create an empty Packet to measure the overhead of ignoring it
+func BenchmarkSkipEmptyPacket(b *testing.B) {
+	var data []byte
+	pkt := gopacket.NewPacket(data, layers.LayerTypeEthernet, gopacket.Default)
+	stats := NewStats()
+	for i := 0; i < b.N; i++ {
+		handlePacket(pkt, stats, nil, nil, nil)
+	}
 }
