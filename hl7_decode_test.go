@@ -60,7 +60,7 @@ func testHL7DecodeEmpty(s string, t *testing.T) {
 func TestHL7DecodeEmpty1(t *testing.T) { testHL7DecodeEmpty("MSH|^~\\&", t) }
 func TestHL7DecodeEmpty2(t *testing.T) { testHL7DecodeEmpty("MSH|^~\\&|", t) }
 
-func identFromString(s string, t *testing.T) string {
+func identFromString(s string) string {
 	appLayer := appLayerFromString(s)
 	ident, _, err := hl7Decode(appLayer)
 	if err != nil {
@@ -96,7 +96,7 @@ const okHl7Header = ("" +
 func TestHL7IdentFromPRT10(t *testing.T) {
 	str := (okHl7Header +
 		"PRT|A|B|C|D|E|F|G|H|I|Grospira Peach B+\r")
-	parsed := identFromString(str, t)
+	parsed := identFromString(str)
 	if parsed != "Grospira Peach B+" {
 		t.Errorf("Failed to parse identifier from string; got '%s'", parsed)
 	}
