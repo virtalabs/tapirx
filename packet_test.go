@@ -50,6 +50,22 @@ func TestPacketParseSimple(t *testing.T) {
 
 }
 
+// Create an empty Packet and ignore it
+func TestSkipEmptyPacket(t *testing.T) {
+	var data []byte
+	pkt := gopacket.NewPacket(data, layers.LayerTypeEthernet, gopacket.Default)
+	stats := NewStats()
+	handlePacket(pkt, stats, nil, nil, nil)
+
+	if stats.TotalPacketCount != 1 {
+		t.Errorf("Wrong number of packets")
+	}
+
+	if len(stats.Identifiers) != 0 {
+		t.Errorf("Expected to find no identifiers; found %d", len(stats.Identifiers))
+	}
+}
+
 // Create an empty Packet to measure the overhead of ignoring it
 func BenchmarkSkipEmptyPacket(b *testing.B) {
 	var data []byte
