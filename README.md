@@ -114,6 +114,10 @@ RHEL7 or CentOS:
 
     $ sudo yum install libpcap-devel
 
+# Benchmarking
+
+Run `go test -bench=.` to run performance benchmarks.
+
 # Frequently Asked Questions
 
 ## How do I select specific network traffic to monitor?
