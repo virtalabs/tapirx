@@ -3,6 +3,7 @@
 package main
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/google/gopacket"
@@ -93,9 +94,41 @@ const okHL7Header = ("" +
 	// Version ID + segment delimiter (carriage return)
 	"2.4\r")
 
+func getNRecordString(nrec int) string {
+	if nrec < 1 || nrec > 26 {
+		return ""
+	}
+	alphas := make([]string, nrec)
+	for i := 0; i < nrec; i++ {
+		alphas[i] = string('A' + i)
+	}
+	return strings.Join(alphas, "|")
+}
+
+func TestNRecordString(t *testing.T) {
+	if getNRecordString(-1) != "" || getNRecordString(0) != "" || getNRecordString(27) != "" {
+		panic("Out-of-range n-record string broken")
+	}
+
+	if getNRecordString(1) != "A" {
+		panic("1-record string broken")
+	}
+
+	if getNRecordString(3) != "A|B|C" {
+		panic("3-record string broken")
+	}
+}
+
+func TestHL7IdentFromOBX18(t *testing.T) {
+	str := okHL7Header + "OBX|" + getNRecordString(17) + "|Grospira Peach B+\r"
+	parsed := identFromString(str)
+	if parsed != "Grospira Peach B+" {
+		t.Errorf("Failed to parse identifier from string; got '%s'", parsed)
+	}
+}
+
 func TestHL7IdentFromPRT10(t *testing.T) {
-	str := (okHL7Header +
-		"PRT|A|B|C|D|E|F|G|H|I|Grospira Peach B+\r")
+	str := okHL7Header + "PRT|" + getNRecordString(9) + "|Grospira Peach B+\r"
 	parsed := identFromString(str)
 	if parsed != "Grospira Peach B+" {
 		t.Errorf("Failed to parse identifier from string; got '%s'", parsed)
