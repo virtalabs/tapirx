@@ -113,9 +113,12 @@ RHEL7 or CentOS:
 
     $ sudo yum install libpcap-devel
 
-# Benchmarking
+# Tests and Benchmarking
 
-Run `go test -bench=.` to run performance benchmarks.
+Run `go test github.com/virtalabs/tapirx` to run the test suite.
+
+Run `go test -bench=. github.com/virtalabs/tapirx` to run tests and performance
+benchmarks.
 
 # Frequently Asked Questions
 
