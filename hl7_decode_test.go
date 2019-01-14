@@ -127,6 +127,13 @@ func TestHL7IdentFromOBX18(t *testing.T) {
 	}
 }
 
+func BenchmarkHL7IdentFromOBX18(b *testing.B) {
+	str := okHL7Header + "OBX|" + getNRecordString(17) + "|Grospira Peach B+\r"
+	for i := 0; i < b.N; i++ {
+		identFromString(str)
+	}
+}
+
 func TestHL7IdentFromPRT10(t *testing.T) {
 	str := okHL7Header + "PRT|" + getNRecordString(9) + "|Grospira Peach B+\r"
 	parsed := identFromString(str)
@@ -136,8 +143,7 @@ func TestHL7IdentFromPRT10(t *testing.T) {
 }
 
 func BenchmarkHL7IdentFromPRT10(b *testing.B) {
-	str := (okHL7Header +
-		"PRT|A|B|C|D|E|F|G|H|I|Grospira Peach B+\r")
+	str := okHL7Header + "PRT|" + getNRecordString(9) + "|Grospira Peach B+\r"
 	for i := 0; i < b.N; i++ {
 		identFromString(str)
 	}
