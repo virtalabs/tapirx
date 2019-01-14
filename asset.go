@@ -14,12 +14,15 @@ type Asset struct {
 	IPv4Address    string    `json:"ipv4_address"`
 	IPv6Address    string    `json:"ipv6_address"`
 	ListensOnPort  string    `json:"open_port_tcp"`
+	ConnectsTo     string    `json:"connects_to"`
 	ConnectsToPort string    `json:"connect_port_tcp"`
 	MACAddress     string    `json:"mac_address"`
 	Identifier     string    `json:"identifier"`
 	Provenance     string    `json:"provenance"`
 	LastSeen       time.Time `json:"last_seen"`
-	ClientID       string    `json:"client_id"`
+
+	// String uniquely identifying this instance of tapirx, like "tpx-east01"
+	ClientID string `json:"client_id"`
 }
 
 // AssetCSVWriter contains the state needed to write to a CSV file
