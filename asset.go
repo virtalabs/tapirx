@@ -100,6 +100,7 @@ func (w *AssetCSVWriter) Append(asset *Asset) error {
 	row := []string{
 		asset.IPv4Address,
 		asset.IPv6Address,
+		asset.ListensOnPort,
 		asset.ConnectsToPort,
 		asset.MACAddress,
 		asset.Identifier,
