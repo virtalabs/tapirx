@@ -14,7 +14,7 @@ type Asset struct {
 	IPv4Address    string    `json:"ipv4_address"`
 	IPv6Address    string    `json:"ipv6_address"`
 	ListensOnPort  string    `json:"open_port_tcp"`
-	ConnectsTo     string    `json:"connects_to"`
+	PeerIP         string    `json:"peer_ip"`
 	ConnectsToPort string    `json:"connect_port_tcp"`
 	MACAddress     string    `json:"mac_address"`
 	Identifier     string    `json:"identifier"`
@@ -60,6 +60,7 @@ func NewAssetCSVWriter(filename string) (*AssetCSVWriter, error) {
 		"ipv4_address",
 		"ipv6_address",
 		"open_port_tcp",
+		"peer_ip",
 		"connect_port_tcp",
 		"mac_address",
 		"identifier",
@@ -101,6 +102,7 @@ func (w *AssetCSVWriter) Append(asset *Asset) error {
 		asset.IPv4Address,
 		asset.IPv6Address,
 		asset.ListensOnPort,
+		asset.PeerIP,
 		asset.ConnectsToPort,
 		asset.MACAddress,
 		asset.Identifier,

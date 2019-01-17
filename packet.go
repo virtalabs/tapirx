@@ -42,12 +42,12 @@ func decodeLayers(packet gopacket.Packet, asset *Asset, stats *Stats) error {
 			logger.Println("  Eth", eth.SrcMAC, eth.DstMAC)
 		case layers.LayerTypeIPv4:
 			asset.IPv4Address = ip4.SrcIP.String()
-			asset.ConnectsTo = ip4.DstIP.String()
+			asset.PeerIP = ip4.DstIP.String()
 			stats.AddLayer("IPv4")
 			logger.Println("  IP4", ip4.SrcIP, ip4.DstIP)
 		case layers.LayerTypeIPv6:
 			asset.IPv6Address = ip6.SrcIP.String()
-			asset.ConnectsTo = ip6.DstIP.String()
+			asset.PeerIP = ip6.DstIP.String()
 			stats.AddLayer("IPv6")
 			logger.Println("  IP6", ip6.SrcIP, ip6.DstIP)
 		case layers.LayerTypeTCP:
