@@ -114,6 +114,13 @@ RHEL7 or CentOS:
 
     $ sudo yum install libpcap-devel
 
+# Tests and Benchmarking
+
+Run `go test github.com/virtalabs/tapirx` to run the test suite.
+
+Run `go test -bench=. github.com/virtalabs/tapirx` to run tests and performance
+benchmarks.
+
 # Frequently Asked Questions
 
 ## How do I select specific network traffic to monitor?
