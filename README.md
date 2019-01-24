@@ -35,7 +35,7 @@ Read on to understand how to share discovered asset information with other tools
 
 ## Finding Devices via a SPAN Port (a/k/a Port Mirroring)
 
-In this configuration, a single network switchport will receive a copy of all traffic arriving at a set of switchports you want to monitor. A typical "managed" switch can copy traffic from all switchports on the switch, or just a subset of them. Ask your network administrator to configure a SPAN port (a/k/a a mirror port) on a switch or router, then connect your machine to that port with an Ethernet cable. If you run [Wireshark](https://www.wireshark.org/) or [`tcpdump`](https://www.tcpdump.org/) on your machine's Ethernet interface, you should start to see traffic from the other switchports.
+In this configuration, a single network switchport will receive a copy of all traffic arriving at a set of switchports you want to monitor. A typical "managed" switch can copy traffic from all switchports on the switch, or just a subset of them. Ask your network administrator to configure a [SPAN port](https://blog.packet-foo.com/2016/11/the-network-capture-playbook-part-4-span-port-in-depth/) (a/k/a a mirror port) on a switch or router, then connect your machine to that port with an Ethernet cable. If you run [Wireshark](https://www.wireshark.org/) or [`tcpdump`](https://www.tcpdump.org/) on your machine's Ethernet interface, you should start to see traffic from the other switchports.
 
 On the machine you've connected to the SPAN port, you should begin to see device information as the other connected devices on the switch generate HL7 or DICOM traffic:
 
