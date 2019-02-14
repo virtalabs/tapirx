@@ -110,9 +110,5 @@ func (w *AssetCSVWriter) Append(asset *Asset) error {
 
 	// Flush buffer to file
 	w.csvWriter.Flush()
-	if err := w.csvWriter.Error(); err != nil {
-		return err
-	}
-
-	return nil
+	return w.csvWriter.Error() // may be nil
 }
