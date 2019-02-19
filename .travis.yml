@@ -20,6 +20,7 @@ install:
  - go get -v -u golang.org/x/lint/golint
 
 script:
+ - tapirx -version
  - go test
  - test -z "$(gofmt -l -e .)" || (echo "gofmt failed"; false)
  - LINT="$(golint)"; test -z "$LINT" || (echo "$LINT"; false)
