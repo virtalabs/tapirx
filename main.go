@@ -69,12 +69,6 @@ import (
 var logger *log.Logger
 var verbose bool
 
-// ProductName is the human-readable name to be shown to the user.
-const ProductName = "Tapirx"
-
-// Version number, filled in via ldflags
-var Version string
-
 func setupLogging(debug bool) {
 	var traceDest io.Writer
 	traceDest = ioutil.Discard
