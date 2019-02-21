@@ -1,0 +1,26 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.11
+
+    working_directory: /go/src/github.com/virtalabs/tapirx
+
+    steps:
+      - checkout
+      - run: go get -v -u
+      - run: go get -v -u golang.org/x/lint/golint
+      - run:
+          name: unit tests
+          command: go test
+      - run:
+          name: fmt
+          command: |
+            test -z "$(gofmt -l -e .)" || (echo "gofmt failed"; false)
+      - run:
+          name: lint
+          command: |
+            LINT="$(golint)"; test -z "$LINT" || (echo "$LINT"; false)
+      - run:
+          name: vet
+          command: go vet
