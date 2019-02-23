@@ -8,11 +8,10 @@ jobs:
 
     steps:
       - checkout
-      - run: go get -v -u
+      - run: go get -v -t -d ./...
       - run: go get -v -u golang.org/x/lint/golint
-      - run:
-          name: unit tests
-          command: go test
+      - run: go test -v ./...
+      - run: go vet
       - run:
           name: fmt
           command: |
@@ -21,6 +20,3 @@ jobs:
           name: lint
           command: |
             LINT="$(golint)"; test -z "$LINT" || (echo "$LINT"; false)
-      - run:
-          name: vet
-          command: go vet
