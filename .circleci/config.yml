@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.11
+      - image: virtalabs/tapirx-golang-1.11:0.0.1
 
     working_directory: /go/src/github.com/virtalabs/tapirx
 
