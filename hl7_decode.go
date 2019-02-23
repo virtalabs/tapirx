@@ -63,8 +63,8 @@ func buildHL7Queries() error {
 // Inspect an application layer, determine if it is an HL7 packet, try to
 // extract identifier.  Returns identifier, provenance, error.
 func hl7Decode(app *gopacket.ApplicationLayer) (string, string, error) {
-	// An HL7 payload starts with "MSH",which stands for "Message Header".
-	// Sometimes, messages are preceded by '\v'.
+	// An HL7 payload starts with "MSH", which stands for "Message Header".
+	// In some implementations, messages are preceded by a control character like '\v'.
 	payloadBytes := (*app).Payload()
 	if len(payloadBytes) < 3 {
 		return "", "", fmt.Errorf("Payload too short")
@@ -79,8 +79,6 @@ func hl7Decode(app *gopacket.ApplicationLayer) (string, string, error) {
 	}
 	logger.Println("Found HL7 header")
 
-	payloadStr := string(payloadBytes)
-
 	// Print HL7 payload
 	//
 	// "%+q", from the docs: If we are unfamiliar or confused by strange values
@@ -92,6 +90,7 @@ func hl7Decode(app *gopacket.ApplicationLayer) (string, string, error) {
 	//
 	// Print a raw Payload with escaped non-ASCII printing characters:
 	// logger.Printf("%+q\n", string(app.Payload()))
+	payloadStr := string(payloadBytes)
 	logger.Println("  HL7 PAYLOAD")
 	for _, segment := range strings.Split(payloadStr, "\r") {
 		logger.Printf("    %+q\n", segment)
