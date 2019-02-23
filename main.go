@@ -175,6 +175,10 @@ func main() {
 	// http://goinbigdata.com/golang-wait-for-all-goroutines-to-finish/
 	var waitGroup sync.WaitGroup
 
+	if err := buildHL7Queries(); err != nil {
+		panic(err)
+	}
+
 	// Start a new thread for each packet
 	nPackets := 0
 	for packet := range packetSource.Packets() {
