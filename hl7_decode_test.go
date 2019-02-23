@@ -134,16 +134,16 @@ func BenchmarkHL7IdentFromOBX18(b *testing.B) {
 	}
 }
 
-func TestHL7IdentFromPRT10(t *testing.T) {
-	str := okHL7Header + "PRT|" + getNRecordString(9) + "|Grospira Peach B+\r"
+func TestHL7IdentFromPRT16(t *testing.T) {
+	str := okHL7Header + "PRT|" + getNRecordString(15) + "|Grospira Peach B+\r"
 	parsed := identFromString(str)
 	if parsed != "Grospira Peach B+" {
 		t.Errorf("Failed to parse identifier from string; got '%s'", parsed)
 	}
 }
 
-func BenchmarkHL7IdentFromPRT10(b *testing.B) {
-	str := okHL7Header + "PRT|" + getNRecordString(9) + "|Grospira Peach B+\r"
+func BenchmarkHL7IdentFromPRT16(b *testing.B) {
+	str := okHL7Header + "PRT|" + getNRecordString(15) + "|Grospira Peach B+\r"
 	for i := 0; i < b.N; i++ {
 		identFromString(str)
 	}
