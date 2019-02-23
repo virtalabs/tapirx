@@ -108,7 +108,7 @@ The following is POSTed to `https://my-asset-management.example.com/assets`:
   "connect_port_tcp": "2575",
   "mac_address": "00:03:b1:b5:b6:48",
   "identifier": "Infuse-O-Matic Peach B+",
-  "provenance": "HL7 PRT-10",
+  "provenance": "HL7 PRT-16",
   "last_seen": "2019-01-02T12:37:22.938687-08:00",
   "client_id": "mymachine.example.com"
 }

@@ -11,7 +11,7 @@ https://www.fknsrs.biz/blog/golang-hl7-library.html.
 package main
 
 import (
-	// "fknsrs.biz/p/hl7"
+	"bytes"
 	"fmt"
 
 	"strings"
@@ -20,33 +20,36 @@ import (
 	// import layers to run its init function
 	_ "github.com/google/gopacket/layers"
 
+	// Mirror of "fknsrs.biz/p/hl7"
 	"github.com/virtalabs/hl7"
 )
 
 // Compile queries we'll later use on HL7 messages
-var prt10Query, _ = hl7.ParseQuery("PRT-10")
+var prt16Query, _ = hl7.ParseQuery("PRT-16")
 var obx18Query, _ = hl7.ParseQuery("OBX-18")
+
+var mshHeader = []byte{77, 83, 72} // "MSH"
 
 // Inspect an application layer, determine if it is an HL7 packet, try to
 // extract identifier.  Returns identifier, provenance, error.
 func hl7Decode(app *gopacket.ApplicationLayer) (string, string, error) {
 	// An HL7 payload starts with "MSH",which stands for "Message Header".
 	// Sometimes, messages are preceded by '\v'.
-
-	// Messages that start with "MSH" immediately
 	payloadBytes := (*app).Payload()
-	payloadStr := string((*app).Payload())
-	if len(payloadStr) >= 3 && strings.HasPrefix(payloadStr, "MSH") {
-		// DO nothing
-	} else if len(payloadStr) >= 4 && strings.HasSuffix(payloadStr[:4], "MSH") {
-		// Payload starts at index 1 (not 0)
+	if len(payloadBytes) < 3 {
+		return "", "", fmt.Errorf("Payload too short")
+	}
+	if bytes.Compare(mshHeader, payloadBytes[:3]) == 0 {
+		// Found header, do nothing
+	} else if bytes.Compare(mshHeader, payloadBytes[1:4]) == 0 {
 		payloadBytes = payloadBytes[1:]
-		payloadStr = payloadStr[1:]
 	} else {
 		// Ignore messages that don't start with "MSH"
 		return "", "", fmt.Errorf("Not an HL7 packet")
 	}
 	logger.Println("Found HL7 header")
+
+	payloadStr := string(payloadBytes)
 
 	// Print HL7 payload
 	//
@@ -92,11 +95,11 @@ func hl7Decode(app *gopacket.ApplicationLayer) (string, string, error) {
 	// Reference:
 	// https://wiki.ihe.net/images/6/6c/UDITopic.pdf
 	var identifier, provenance string
-	if prt10 := prt10Query.GetString(message); prt10 != "" {
+	if prt16 := prt16Query.GetString(message); prt16 != "" {
 		// Found in PRT segment
-		logger.Println("  Found HL7 identifier in PRT-10 segment")
-		identifier = prt10
-		provenance = "HL7 PRT-10"
+		logger.Println("  Found HL7 identifier in PRT-16 segment")
+		identifier = prt16
+		provenance = "HL7 PRT-16"
 	} else if obx18 := obx18Query.GetString(message); obx18 != "" {
 		// Did not find identifier in PRT segment, trying for OBX-18 field of the
 		// OBX segment, which from V2.7 of HL7 is retained for backward

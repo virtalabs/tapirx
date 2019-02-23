@@ -33,7 +33,7 @@ func dicomDecode(app *gopacket.ApplicationLayer) (string, string, error) {
 		return "", "", fmt.Errorf("Not a DICOM packet")
 	}
 	// Hard code provenance.  Note that we could add information like the HL7
-	// decoder, e.g., "HL7 OBX-18" or "HL7 PRT-10"
+	// decoder, e.g., "HL7 OBX-18" or "HL7 PRT-16"
 	provenance := "DICOM"
 
 	return identifier, provenance, nil
