@@ -24,11 +24,41 @@ import (
 	"github.com/virtalabs/hl7"
 )
 
-// Compile queries we'll later use on HL7 messages
-var prt16Query, _ = hl7.ParseQuery("PRT-16")
-var obx18Query, _ = hl7.ParseQuery("OBX-18")
+// HL7Query represents a compiled query and its corresponding output field.
+type HL7Query struct {
+	hl7Field    string
+	hl7Query    *hl7.Query
+	outputField string
+}
 
-var mshHeader = []byte{77, 83, 72} // "MSH"
+// CompileQuery compiles an HL7 field query into an HL7Query.
+func (q *HL7Query) CompileQuery() error {
+	qry, err := hl7.ParseQuery(q.hl7Field)
+	if err != nil {
+		return err
+	}
+	q.hl7Query = qry
+	return nil
+}
+
+func (q HL7Query) String() string {
+	compiled := q.hl7Query != nil
+	return fmt.Sprintf("HL7Query{%v -> %v, %v}", q.hl7Field, q.outputField, compiled)
+}
+
+var (
+	mshHeader  = []byte{77, 83, 72} // "MSH"
+	hl7Queries []HL7Query
+)
+
+func buildHL7Queries() error {
+	for _, queryType := range []string{"PRT-16", "OBX-18"} {
+		q := HL7Query{hl7Field: queryType, outputField: "field"}
+		q.CompileQuery()
+		hl7Queries = append(hl7Queries, q)
+	}
+	return nil
+}
 
 // Inspect an application layer, determine if it is an HL7 packet, try to
 // extract identifier.  Returns identifier, provenance, error.
@@ -95,18 +125,14 @@ func hl7Decode(app *gopacket.ApplicationLayer) (string, string, error) {
 	// Reference:
 	// https://wiki.ihe.net/images/6/6c/UDITopic.pdf
 	var identifier, provenance string
-	if prt16 := prt16Query.GetString(message); prt16 != "" {
-		// Found in PRT segment
-		logger.Println("  Found HL7 identifier in PRT-16 segment")
-		identifier = prt16
-		provenance = "HL7 PRT-16"
-	} else if obx18 := obx18Query.GetString(message); obx18 != "" {
-		// Did not find identifier in PRT segment, trying for OBX-18 field of the
-		// OBX segment, which from V2.7 of HL7 is retained for backward
-		// compatibility only.
-		logger.Println("  Found HL7 identifier in OBX-18 segment")
-		identifier = obx18
-		provenance = "HL7 OBX-18"
+
+	for _, query := range hl7Queries {
+		if ident := query.hl7Query.GetString(message); ident != "" {
+			logger.Printf("  Found HL7 identifier in %s segment", query.hl7Field)
+			identifier = ident
+			provenance = "HL7 " + query.hl7Field
+			break
+		}
 	}
 
 	if identifier == "" {

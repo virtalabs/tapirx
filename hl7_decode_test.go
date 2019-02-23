@@ -10,6 +10,12 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
+func init() {
+	if err := buildHL7Queries(); err != nil {
+		panic("Failed to build queries")
+	}
+}
+
 func TestHL7DecodeFile(t *testing.T) {
 	handle, err := pcap.OpenOffline("testdata/HL7-ADT-UDI-PRT.pcap")
 	if err != nil {
