@@ -1,6 +1,6 @@
 ![Tapirx logo](media/tapirx-logo-github.png)
 
-[![Build Status](https://travis-ci.org/virtalabs/tapirx.svg?branch=develop)](https://travis-ci.org/virtalabs/tapirx)
+[![CircleCI](https://circleci.com/gh/virtalabs/tapirx.svg?style=svg)](https://circleci.com/gh/virtalabs/tapirx)
 [![Go Report Card](https://goreportcard.com/badge/github.com/virtalabs/tapirx)](https://goreportcard.com/report/github.com/virtalabs/tapirx)
 
 Tapirx ("taper ecks") passively discovers and identifies networked medical
