@@ -70,13 +70,25 @@ func (decoder HL7Decoder) String() string {
 		strings.Join(decoderNames, ","))
 }
 
+func (decoder *HL7Decoder) AddField(fieldName, outputName string) error {
+	newQuery := HL7Query{hl7Field: fieldName, outputField: outputName}
+	if err := newQuery.CompileQuery(); err != nil {
+		return err
+	}
+	decoder.hl7Queries = append(decoder.hl7Queries, newQuery)
+	return nil
+}
+
 // Initialize precompiles a set of HL7 queries to match against payloads.
+//
+// Currently uses a hard-coded set of "interesting" fields.
 func (decoder *HL7Decoder) Initialize() error {
-	fields := []string{"PRT-16", "OBX-18"}
-	decoder.hl7Queries = make([]HL7Query, len(fields))
-	for i, queryType := range fields {
-		decoder.hl7Queries[i] = HL7Query{hl7Field: queryType, outputField: "field"}
-		decoder.hl7Queries[i].CompileQuery()
+	placeholder := "" // TODO: use meaningful output field names
+	if err := decoder.AddField("PRT-16", placeholder); err != nil {
+		return err
+	}
+	if err := decoder.AddField("OBX-18", placeholder); err != nil {
+		return err
 	}
 	return nil
 }
