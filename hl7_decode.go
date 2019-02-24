@@ -70,6 +70,9 @@ func (decoder HL7Decoder) String() string {
 		strings.Join(decoderNames, ","))
 }
 
+// AddField registers an additional field matcher with an HL7Decoder.
+//
+// TODO: make outputName actually do something
 func (decoder *HL7Decoder) AddField(fieldName, outputName string) error {
 	newQuery := HL7Query{hl7Field: fieldName, outputField: outputName}
 	if err := newQuery.CompileQuery(); err != nil {
