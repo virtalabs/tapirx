@@ -8,10 +8,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/google/gopacket"
-	"github.com/google/gopacket/layers"
 	"sync"
 	"time"
+
+	"github.com/google/gopacket"
+	"github.com/google/gopacket/layers"
 )
 
 // decodeLayers extracts information from packets and stuffs any discovered
@@ -75,7 +76,7 @@ func decodeLayers(packet gopacket.Packet, asset *Asset, stats *Stats) error {
 
 // parseApplicationLayer extracts information from a packet's application layer,
 // if one exists, and updates a provided Asset object.
-func parseApplicationLayer(packet gopacket.Packet, asset *Asset, stats *Stats) error {
+func parseApplicationLayer(packet gopacket.Packet, decoders []PayloadDecoder, asset *Asset, stats *Stats) error {
 	app := packet.ApplicationLayer()
 	if app == nil {
 		return fmt.Errorf("No application layer")
@@ -86,15 +87,9 @@ func parseApplicationLayer(packet gopacket.Packet, asset *Asset, stats *Stats) e
 
 	// Try to decode the application layer using each decoder in turn, stopping
 	// when a decoder succeeds or there are no decoders remaining.
-	type DecodeFunc func(app *gopacket.ApplicationLayer) (string, string, error)
-	decoders := []struct {
-		Name string
-		Fun  DecodeFunc
-	}{{"HL7", hl7Decode}, {"DICOM", dicomDecode}}
-	for _, pair := range decoders {
-		decoderName := pair.Name
-		decoder := pair.Fun
-		identifier, provenance, err := decoder(&app)
+	for _, decoder := range decoders {
+		decoderName := decoder.Name()
+		identifier, provenance, err := decoder.DecodePayload(&app)
 		if err == nil {
 			// Success, we're done
 			asset.Identifier = identifier
@@ -116,6 +111,7 @@ func parseApplicationLayer(packet gopacket.Packet, asset *Asset, stats *Stats) e
 // API endpoint.
 func handlePacket(
 	packet gopacket.Packet,
+	appLayerDecoders []PayloadDecoder,
 	stats *Stats,
 	apiClient *APIClient,
 	assetCSVWriter *AssetCSVWriter,
@@ -134,7 +130,7 @@ func handlePacket(
 	if err := decodeLayers(packet, asset, stats); err != nil {
 		stats.AddError(err)
 		return
-	} else if err := parseApplicationLayer(packet, asset, stats); err != nil {
+	} else if err := parseApplicationLayer(packet, appLayerDecoders, asset, stats); err != nil {
 		stats.AddError(err)
 		return
 	} else {

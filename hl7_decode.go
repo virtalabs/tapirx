@@ -46,23 +46,43 @@ func (q HL7Query) String() string {
 	return fmt.Sprintf("HL7Query{%v -> %v, %v}", q.hl7Field, q.outputField, compiled)
 }
 
-var (
-	mshHeader  = []byte{77, 83, 72} // "MSH"
-	hl7Queries []HL7Query
-)
+var mshHeader = []byte{77, 83, 72} // "MSH"
 
-func buildHL7Queries() error {
-	for _, queryType := range []string{"PRT-16", "OBX-18"} {
-		q := HL7Query{hl7Field: queryType, outputField: "field"}
-		q.CompileQuery()
-		hl7Queries = append(hl7Queries, q)
+// HL7Decoder receives application-layer payloads and, when possible, extracts
+// identifying information from HL7 messages therein.
+type HL7Decoder struct {
+	// Compiled HL7 queries to be matched against
+	hl7Queries []HL7Query
+}
+
+// Name returns the name of the decoder.
+func (decoder HL7Decoder) Name() string {
+	return "HL7"
+}
+
+func (decoder HL7Decoder) String() string {
+	decoderNames := make([]string, len(decoder.hl7Queries))
+	for i, q := range decoder.hl7Queries {
+		decoderNames[i] = q.String()
+	}
+	return fmt.Sprintf("%s(%s)",
+		decoder.Name(),
+		strings.Join(decoderNames, ","))
+}
+
+// Initialize precompiles a set of HL7 queries to match against payloads.
+func (decoder *HL7Decoder) Initialize() error {
+	fields := []string{"PRT-16", "OBX-18"}
+	decoder.hl7Queries = make([]HL7Query, len(fields))
+	for i, queryType := range fields {
+		decoder.hl7Queries[i] = HL7Query{hl7Field: queryType, outputField: "field"}
+		decoder.hl7Queries[i].CompileQuery()
 	}
 	return nil
 }
 
-// Inspect an application layer, determine if it is an HL7 packet, try to
-// extract identifier.  Returns identifier, provenance, error.
-func hl7Decode(app *gopacket.ApplicationLayer) (string, string, error) {
+// DecodePayload extracts device identifiers from an application-layer payload.
+func (decoder *HL7Decoder) DecodePayload(app *gopacket.ApplicationLayer) (string, string, error) {
 	// An HL7 payload starts with "MSH", which stands for "Message Header".
 	// In some implementations, messages are preceded by a control character like '\v'.
 	payloadBytes := (*app).Payload()
@@ -125,7 +145,7 @@ func hl7Decode(app *gopacket.ApplicationLayer) (string, string, error) {
 	// https://wiki.ihe.net/images/6/6c/UDITopic.pdf
 	var identifier, provenance string
 
-	for _, query := range hl7Queries {
+	for _, query := range decoder.hl7Queries {
 		if ident := query.hl7Query.GetString(message); ident != "" {
 			logger.Printf("  Found HL7 identifier in %s segment", query.hl7Field)
 			identifier = ident

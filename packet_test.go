@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/google/gopacket"
@@ -10,6 +11,20 @@ import (
 	// import layers to run its init function
 	_ "github.com/google/gopacket/layers"
 )
+
+var testDecoders []PayloadDecoder
+
+func init() {
+	testDecoders = []PayloadDecoder{
+		&HL7Decoder{},
+		&DicomDecoder{},
+	}
+	for _, decoder := range testDecoders {
+		if err := decoder.Initialize(); err != nil {
+			panic("Failed to initialize decoders")
+		}
+	}
+}
 
 func TestPacketParseSimple(t *testing.T) {
 	// Read a small pcap file and process the packets using handlePacket.  Use the
@@ -35,17 +50,18 @@ func TestPacketParseSimple(t *testing.T) {
 	// Handle each packet from the pcap file
 	var numPackets uint64
 	for packet := range packetSource.Packets() {
-		handlePacket(packet, stats, apiClient, assetCSVWriter, nil)
+		handlePacket(packet, testDecoders, stats, apiClient, assetCSVWriter, nil)
 		numPackets++
 	}
 
 	// Check stats
-	if stats.Provenances["HL7 PRT-16"] != 1 {
-		t.Errorf("Not enough HL7 packets")
+	if nPrt16 := stats.Provenances["HL7 PRT-16"]; nPrt16 != 1 {
+		fmt.Println(stats)
+		fmt.Println(testDecoders)
+		t.Errorf("Not enough HL7 packets: %d (wanted %d)", nPrt16, 1)
 	}
-	if stats.TotalPacketCount != numPackets {
-		t.Errorf("Wrong total packet count: %d (wanted %d)",
-			stats.TotalPacketCount, numPackets)
+	if nPkts := stats.TotalPacketCount; nPkts != numPackets {
+		t.Errorf("Wrong total packet count: %d (wanted %d)", nPkts, numPackets)
 	}
 
 }
@@ -55,7 +71,7 @@ func TestSkipEmptyPacket(t *testing.T) {
 	var data []byte
 	pkt := gopacket.NewPacket(data, layers.LayerTypeEthernet, gopacket.Default)
 	stats := NewStats()
-	handlePacket(pkt, stats, nil, nil, nil)
+	handlePacket(pkt, testDecoders, stats, nil, nil, nil)
 
 	if stats.TotalPacketCount != 1 {
 		t.Errorf("Wrong number of packets")
@@ -72,6 +88,6 @@ func BenchmarkSkipEmptyPacket(b *testing.B) {
 	pkt := gopacket.NewPacket(data, layers.LayerTypeEthernet, gopacket.Default)
 	stats := NewStats()
 	for i := 0; i < b.N; i++ {
-		handlePacket(pkt, stats, nil, nil, nil)
+		handlePacket(pkt, testDecoders, stats, nil, nil, nil)
 	}
 }

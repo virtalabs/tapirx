@@ -175,11 +175,19 @@ func main() {
 	// http://goinbigdata.com/golang-wait-for-all-goroutines-to-finish/
 	var waitGroup sync.WaitGroup
 
-	if err := buildHL7Queries(); err != nil {
-		panic(err)
+	// Make a set of decoders against which each incoming packet will be tested.
+	appLayerDecoders := []PayloadDecoder{
+		&HL7Decoder{},
+		&DicomDecoder{},
+	}
+	for _, decoder := range appLayerDecoders {
+		if err := decoder.Initialize(); err != nil {
+			panic(err)
+		}
 	}
 
-	// Start a new thread for each packet
+	// Handle a sequence of packets. If sequential is set, handle every packet in the main thread.
+	// Otherwise, spawn a goroutine for each packet.
 	nPackets := 0
 	for packet := range packetSource.Packets() {
 		if *packetLimit > 0 && nPackets >= *packetLimit {
@@ -188,9 +196,9 @@ func main() {
 		}
 		waitGroup.Add(1)
 		if *sequential {
-			handlePacket(packet, stats, apiClient, assetCSVWriter, &waitGroup)
+			handlePacket(packet, appLayerDecoders, stats, apiClient, assetCSVWriter, &waitGroup)
 		} else {
-			go handlePacket(packet, stats, apiClient, assetCSVWriter, &waitGroup)
+			go handlePacket(packet, appLayerDecoders, stats, apiClient, assetCSVWriter, &waitGroup)
 		}
 		nPackets++
 	}

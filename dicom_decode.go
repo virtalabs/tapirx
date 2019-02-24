@@ -23,7 +23,26 @@ const defaultMaxPDUSize uint32 = 4 << 20
 
 const typeAAssociateRq = 0x01
 
-func dicomDecode(app *gopacket.ApplicationLayer) (string, string, error) {
+// DicomDecoder receives application-layer payloads and, when possible, extracts
+// identifying information from DICOM messages therein.
+type DicomDecoder struct{}
+
+// Name returns the name of the decoder.
+func (decoder DicomDecoder) Name() string {
+	return "DICOM"
+}
+
+func (decoder DicomDecoder) String() string {
+	return decoder.Name()
+}
+
+// Initialize does nothing.
+func (decoder *DicomDecoder) Initialize() error {
+	return nil
+}
+
+// DecodePayload extracts device identifiers from an application-layer payload.
+func (decoder *DicomDecoder) DecodePayload(app *gopacket.ApplicationLayer) (string, string, error) {
 	var appReader io.Reader = bytes.NewReader((*app).Payload())
 
 	identifier, err := detectDicomAssociateIdentifier(appReader)
