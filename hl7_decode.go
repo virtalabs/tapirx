@@ -166,13 +166,7 @@ func (decoder *HL7Decoder) DecodePayload(app *gopacket.ApplicationLayer) (string
 		}
 	}
 
-	if identifier == "" {
-		// FIXME should this be an error?
-		logger.Println("  HL7 (no identifier)")
-	} else {
-		// Report to logs
-		logger.Printf("  HL7 identifier: %s\n", identifier)
-	}
+	logger.Printf("  HL7 identifier: [%s] (provenance: %s)", identifier, provenance)
 
 	return identifier, provenance, nil
 }
