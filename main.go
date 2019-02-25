@@ -78,10 +78,30 @@ func setupLogging(debug bool) {
 	logger = log.New(traceDest, "INFO: ", log.LstdFlags)
 }
 
+func listInterfaces() {
+	ifaces, err := pcap.FindAllDevs()
+	if err != nil {
+		panic(err)
+	}
+	for _, iface := range ifaces {
+		if runtime.GOOS == "windows" {
+			// On Windows, device names are ugly, like
+			// "\Device\NPF_{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}",
+			// so display a more descriptive name too.
+			fmt.Printf("%s\t(%s)\n", iface.Name, iface.Description)
+		} else {
+			fmt.Println(iface.Name)
+		}
+	}
+}
+
 func main() {
 	// Default client ID is this computer's hostname
-	hostname, _ := os.Hostname()
-	osName := runtime.GOOS
+	hostname, err := os.Hostname()
+	if err != nil {
+		logger.Println("Failed to get hostname")
+		hostname = "localhost"
+	}
 
 	// parse command-line flags
 	flag.BoolVar(&verbose, "verbose", false, "Show verbose output")
@@ -109,30 +129,14 @@ func main() {
 	}
 
 	if *listIfaces {
-		ifaces, err := pcap.FindAllDevs()
-		if err != nil {
-			panic(err)
-		}
-		for _, iface := range ifaces {
-			if osName == "windows" {
-				// On Windows, device names are ugly, like
-				// "\Device\NPF_{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}",
-				// so display a more descriptive name too.
-				fmt.Printf("%s\t(%s)\n", iface.Name, iface.Description)
-			} else {
-				fmt.Println(iface.Name)
-			}
-		}
+		listInterfaces()
 		os.Exit(0)
 	}
 
-	logger.Printf("starting %s %s (%s)\n", ProductName, Version, osName)
+	logger.Printf("starting %s %s (%s)\n", ProductName, Version, runtime.GOOS)
 	defer logger.Printf("exiting %s\n", ProductName)
 
-	var (
-		handle *pcap.Handle
-		err    error
-	)
+	var handle *pcap.Handle
 	// Read from file or from interface (and bail if there's a failure)
 	if *fileName != "" {
 		logger.Printf("read from file %v\n", *fileName)
