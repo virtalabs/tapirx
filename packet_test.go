@@ -40,7 +40,7 @@ func TestPacketParseSimple(t *testing.T) {
 	}
 
 	// Check stats
-	if stats.Provenances["HL7 PRT-10"] != 1 {
+	if stats.Provenances["HL7 PRT-16"] != 1 {
 		t.Errorf("Not enough HL7 packets")
 	}
 	if stats.TotalPacketCount != numPackets {

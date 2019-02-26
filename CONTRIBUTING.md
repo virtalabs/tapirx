@@ -67,7 +67,7 @@ explanatory.
 
 For HL7, `tapirx` can find identifiers when an HL7 packet fits entirely inside
 an MTU (i.e., within one frame). Fields that commonly contain identifiers can
-be found in `hl7_decode.go` and include `PRT-10` and `OBX-18`.
+be found in `hl7_decode.go` and include `PRT-*` and `OBX-18`.
 
 For DICOM, identifiers can often be found in DICOM _Associate Request_ packets.
 This type of packet includes a _Calling Application Entity Title_.  We need
