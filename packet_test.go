@@ -33,7 +33,7 @@ func TestPacketParseSimple(t *testing.T) {
 	setupLogging(false)
 
 	// Initialize objects later used by handlePacket
-	stats := NewStats()
+	stats = *NewStats()
 	apiClient := NewAPIClient("", "", "", 1, false)
 	assetCSVWriter, err := NewAssetCSVWriter("")
 	if err != nil {
@@ -50,7 +50,7 @@ func TestPacketParseSimple(t *testing.T) {
 	// Handle each packet from the pcap file
 	var numPackets uint64
 	for packet := range packetSource.Packets() {
-		handlePacket(packet, testDecoders, stats, apiClient, assetCSVWriter, nil)
+		handlePacket(packet, testDecoders, apiClient, assetCSVWriter, nil)
 		numPackets++
 	}
 
@@ -70,8 +70,8 @@ func TestPacketParseSimple(t *testing.T) {
 func TestSkipEmptyPacket(t *testing.T) {
 	var data []byte
 	pkt := gopacket.NewPacket(data, layers.LayerTypeEthernet, gopacket.Default)
-	stats := NewStats()
-	handlePacket(pkt, testDecoders, stats, nil, nil, nil)
+	stats = *NewStats()
+	handlePacket(pkt, testDecoders, nil, nil, nil)
 
 	if stats.TotalPacketCount != 1 {
 		t.Errorf("Wrong number of packets")
@@ -86,8 +86,8 @@ func TestSkipEmptyPacket(t *testing.T) {
 func BenchmarkSkipEmptyPacket(b *testing.B) {
 	var data []byte
 	pkt := gopacket.NewPacket(data, layers.LayerTypeEthernet, gopacket.Default)
-	stats := NewStats()
+	stats = *NewStats()
 	for i := 0; i < b.N; i++ {
-		handlePacket(pkt, testDecoders, stats, nil, nil, nil)
+		handlePacket(pkt, testDecoders, nil, nil, nil)
 	}
 }

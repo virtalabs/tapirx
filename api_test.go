@@ -19,7 +19,6 @@ var (
 	mux       *http.ServeMux
 	server    *httptest.Server
 	apiClient *APIClient
-	stats     *Stats
 )
 
 // Create an instance of httptest.Server and bind it to our mux. We’ll use the
@@ -34,7 +33,7 @@ func setup() func() {
 
 	apiURL := server.URL + "/api" // Base URL automatically chosen by httptest
 	apiClient = NewAPIClient(apiURL, "", "", 1, true)
-	stats = NewStats()
+	stats = *NewStats()
 
 	// The API client calls the logger global.  Initialize it.
 	setupLogging(false)

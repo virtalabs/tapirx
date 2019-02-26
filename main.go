@@ -66,8 +66,11 @@ import (
 	_ "github.com/google/gopacket/layers"
 )
 
-var logger *log.Logger
-var verbose bool
+var (
+	logger  *log.Logger
+	verbose bool
+	stats   Stats
+)
 
 func setupLogging(debug bool) {
 	var traceDest io.Writer
@@ -122,6 +125,7 @@ func main() {
 	flag.Parse()
 
 	setupLogging(*debug)
+	stats = *NewStats()
 
 	if *version {
 		fmt.Printf("%s %s\n", ProductName, Version)
@@ -158,9 +162,6 @@ func main() {
 	}
 
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
-
-	// Configure statistics tracking module
-	stats := NewStats()
 
 	// Configure the API client module
 	apiClientEnabled := *apiURL != ""
@@ -200,9 +201,9 @@ func main() {
 		}
 		waitGroup.Add(1)
 		if *sequential {
-			handlePacket(packet, appLayerDecoders, stats, apiClient, assetCSVWriter, &waitGroup)
+			handlePacket(packet, appLayerDecoders, apiClient, assetCSVWriter, &waitGroup)
 		} else {
-			go handlePacket(packet, appLayerDecoders, stats, apiClient, assetCSVWriter, &waitGroup)
+			go handlePacket(packet, appLayerDecoders, apiClient, assetCSVWriter, &waitGroup)
 		}
 		nPackets++
 	}

@@ -17,7 +17,7 @@ import (
 
 // decodeLayers extracts information from packets and stuffs any discovered
 // metadata into the provided Asset object.
-func decodeLayers(packet gopacket.Packet, asset *Asset, stats *Stats) error {
+func decodeLayers(packet gopacket.Packet, asset *Asset) error {
 	// Decode link, network, and transport layers to extract metadata about a
 	// packet that may represent an asset.
 	//
@@ -76,7 +76,7 @@ func decodeLayers(packet gopacket.Packet, asset *Asset, stats *Stats) error {
 
 // parseApplicationLayer extracts information from a packet's application layer,
 // if one exists, and updates a provided Asset object.
-func parseApplicationLayer(packet gopacket.Packet, decoders []PayloadDecoder, asset *Asset, stats *Stats) error {
+func parseApplicationLayer(packet gopacket.Packet, decoders []PayloadDecoder, asset *Asset) error {
 	app := packet.ApplicationLayer()
 	if app == nil {
 		return fmt.Errorf("No application layer")
@@ -112,7 +112,6 @@ func parseApplicationLayer(packet gopacket.Packet, decoders []PayloadDecoder, as
 func handlePacket(
 	packet gopacket.Packet,
 	appLayerDecoders []PayloadDecoder,
-	stats *Stats,
 	apiClient *APIClient,
 	assetCSVWriter *AssetCSVWriter,
 	waitGroup *sync.WaitGroup,
@@ -127,10 +126,10 @@ func handlePacket(
 
 	// Decode packet and update statistics
 	stats.AddPacket()
-	if err := decodeLayers(packet, asset, stats); err != nil {
+	if err := decodeLayers(packet, asset); err != nil {
 		stats.AddError(err)
 		return
-	} else if err := parseApplicationLayer(packet, appLayerDecoders, asset, stats); err != nil {
+	} else if err := parseApplicationLayer(packet, appLayerDecoders, asset); err != nil {
 		stats.AddError(err)
 		return
 	} else {
