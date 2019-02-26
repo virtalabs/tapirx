@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/google/gopacket"
@@ -56,8 +55,6 @@ func TestPacketParseSimple(t *testing.T) {
 
 	// Check stats
 	if nPrt16 := stats.Provenances["HL7 PRT-16"]; nPrt16 != 1 {
-		fmt.Println(stats)
-		fmt.Println(testDecoders)
 		t.Errorf("Not enough HL7 packets: %d (wanted %d)", nPrt16, 1)
 	}
 	if nPkts := stats.TotalPacketCount; nPkts != numPackets {
