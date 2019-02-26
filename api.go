@@ -1,9 +1,20 @@
 /*
-Connection to BlueFlow API.
+Submit information about discovered devices to other services via REST API
+endpoints.
 
-Helpful documentation about requests in Go
-https://golang.org/pkg/net/http/
-http://polyglot.ninja/golang-making-http-requests/
+Upon discovering and/or identifying a device, submit a POST request to a URL
+like https://my-other-system.com/device/, optionally presenting an authorization
+token.  This API endpoint should behave like an "upsert" request, i.e., it
+should update itself rather than bail when it receives a clue about a device it
+has been told about before.
+
+Concurrent requests to this API endpoint are limited according to the apiLimit
+parameter of NewAPIClient(). If apiLimit number of requests are currently in
+flight, requests will be canceled until there are slots available.
+
+Helpful documentation about requests in Go:
+- https://golang.org/pkg/net/http/
+- http://polyglot.ninja/golang-making-http-requests/
 */
 
 package main

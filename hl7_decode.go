@@ -11,7 +11,7 @@ https://www.fknsrs.biz/blog/golang-hl7-library.html.
 package main
 
 import (
-	// "fknsrs.biz/p/hl7"
+	"bytes"
 	"fmt"
 
 	"strings"
@@ -20,28 +20,59 @@ import (
 	// import layers to run its init function
 	_ "github.com/google/gopacket/layers"
 
+	// Mirror of "fknsrs.biz/p/hl7"
 	"github.com/virtalabs/hl7"
 )
 
-// Compile queries we'll later use on HL7 messages
-var prt10Query, _ = hl7.ParseQuery("PRT-10")
-var obx18Query, _ = hl7.ParseQuery("OBX-18")
+// HL7Query represents a compiled query and its corresponding output field.
+type HL7Query struct {
+	hl7Field    string
+	hl7Query    *hl7.Query
+	outputField string
+}
+
+// CompileQuery compiles an HL7 field query into an HL7Query.
+func (q *HL7Query) CompileQuery() error {
+	qry, err := hl7.ParseQuery(q.hl7Field)
+	if err != nil {
+		return err
+	}
+	q.hl7Query = qry
+	return nil
+}
+
+func (q HL7Query) String() string {
+	compiled := q.hl7Query != nil
+	return fmt.Sprintf("HL7Query{%v -> %v, %v}", q.hl7Field, q.outputField, compiled)
+}
+
+var (
+	mshHeader  = []byte{77, 83, 72} // "MSH"
+	hl7Queries []HL7Query
+)
+
+func buildHL7Queries() error {
+	for _, queryType := range []string{"PRT-16", "OBX-18"} {
+		q := HL7Query{hl7Field: queryType, outputField: "field"}
+		q.CompileQuery()
+		hl7Queries = append(hl7Queries, q)
+	}
+	return nil
+}
 
 // Inspect an application layer, determine if it is an HL7 packet, try to
 // extract identifier.  Returns identifier, provenance, error.
 func hl7Decode(app *gopacket.ApplicationLayer) (string, string, error) {
-	// An HL7 payload starts with "MSH",which stands for "Message Header".
-	// Sometimes, messages are preceded by '\v'.
-
-	// Messages that start with "MSH" immediately
+	// An HL7 payload starts with "MSH", which stands for "Message Header".
+	// In some implementations, messages are preceded by a control character like '\v'.
 	payloadBytes := (*app).Payload()
-	payloadStr := string((*app).Payload())
-	if len(payloadStr) >= 3 && strings.HasPrefix(payloadStr, "MSH") {
-		// DO nothing
-	} else if len(payloadStr) >= 4 && strings.HasSuffix(payloadStr[:4], "MSH") {
-		// Payload starts at index 1 (not 0)
+	if len(payloadBytes) < 3 {
+		return "", "", fmt.Errorf("Payload too short")
+	}
+	if bytes.Compare(mshHeader, payloadBytes[:3]) == 0 {
+		// Found header, do nothing
+	} else if bytes.Compare(mshHeader, payloadBytes[1:4]) == 0 {
 		payloadBytes = payloadBytes[1:]
-		payloadStr = payloadStr[1:]
 	} else {
 		// Ignore messages that don't start with "MSH"
 		return "", "", fmt.Errorf("Not an HL7 packet")
@@ -59,6 +90,7 @@ func hl7Decode(app *gopacket.ApplicationLayer) (string, string, error) {
 	//
 	// Print a raw Payload with escaped non-ASCII printing characters:
 	// logger.Printf("%+q\n", string(app.Payload()))
+	payloadStr := string(payloadBytes)
 	logger.Println("  HL7 PAYLOAD")
 	for _, segment := range strings.Split(payloadStr, "\r") {
 		logger.Printf("    %+q\n", segment)
@@ -92,18 +124,14 @@ func hl7Decode(app *gopacket.ApplicationLayer) (string, string, error) {
 	// Reference:
 	// https://wiki.ihe.net/images/6/6c/UDITopic.pdf
 	var identifier, provenance string
-	if prt10 := prt10Query.GetString(message); prt10 != "" {
-		// Found in PRT segment
-		logger.Println("  Found HL7 identifier in PRT-10 segment")
-		identifier = prt10
-		provenance = "HL7 PRT-10"
-	} else if obx18 := obx18Query.GetString(message); obx18 != "" {
-		// Did not find identifier in PRT segment, trying for OBX-18 field of the
-		// OBX segment, which from V2.7 of HL7 is retained for backward
-		// compatibility only.
-		logger.Println("  Found HL7 identifier in OBX-18 segment")
-		identifier = obx18
-		provenance = "HL7 OBX-18"
+
+	for _, query := range hl7Queries {
+		if ident := query.hl7Query.GetString(message); ident != "" {
+			logger.Printf("  Found HL7 identifier in %s segment", query.hl7Field)
+			identifier = ident
+			provenance = "HL7 " + query.hl7Field
+			break
+		}
 	}
 
 	if identifier == "" {

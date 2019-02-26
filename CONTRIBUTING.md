@@ -30,12 +30,12 @@ the resulting executable will actually be in `$GOPATH`.
 
 # Testing and code quality
 
-We use [Travis](https://travis-ci.com/virtalabs/tapirx) for automated testing.
-Travis runs functional tests and also style and "lint" type tests to make sure
+We use [CircleCI](https://circleci.com/gh/virtalabs/tapirx) for automated testing.
+CircleCI runs functional tests and also style and "lint" style tests to make sure
 that code remains easy to read, well formatted, and thoroughly tested.
 
 If you're developing on this codebase, here's a good workflow to maximize the
-chances that your code will pass all of Travis's checks:
+chances that your code will pass all of CircleCI's checks:
 
     $ go test
     $ go vet
@@ -67,7 +67,7 @@ explanatory.
 
 For HL7, `tapirx` can find identifiers when an HL7 packet fits entirely inside
 an MTU (i.e., within one frame). Fields that commonly contain identifiers can
-be found in `hl7_decode.go` and include `PRT-10` and `OBX-18`.
+be found in `hl7_decode.go` and include `PRT-*` and `OBX-18`.
 
 For DICOM, identifiers can often be found in DICOM _Associate Request_ packets.
 This type of packet includes a _Calling Application Entity Title_.  We need

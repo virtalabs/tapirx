@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/gopacket"
+	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
 
 	// import layers to run its init function
@@ -39,7 +40,7 @@ func TestPacketParseSimple(t *testing.T) {
 	}
 
 	// Check stats
-	if stats.Provenances["HL7 PRT-10"] != 1 {
+	if stats.Provenances["HL7 PRT-16"] != 1 {
 		t.Errorf("Not enough HL7 packets")
 	}
 	if stats.TotalPacketCount != numPackets {
@@ -47,4 +48,30 @@ func TestPacketParseSimple(t *testing.T) {
 			stats.TotalPacketCount, numPackets)
 	}
 
+}
+
+// Create an empty Packet and ignore it
+func TestSkipEmptyPacket(t *testing.T) {
+	var data []byte
+	pkt := gopacket.NewPacket(data, layers.LayerTypeEthernet, gopacket.Default)
+	stats := NewStats()
+	handlePacket(pkt, stats, nil, nil, nil)
+
+	if stats.TotalPacketCount != 1 {
+		t.Errorf("Wrong number of packets")
+	}
+
+	if len(stats.Identifiers) != 0 {
+		t.Errorf("Expected to find no identifiers; found %d", len(stats.Identifiers))
+	}
+}
+
+// Create an empty Packet to measure the overhead of ignoring it
+func BenchmarkSkipEmptyPacket(b *testing.B) {
+	var data []byte
+	pkt := gopacket.NewPacket(data, layers.LayerTypeEthernet, gopacket.Default)
+	stats := NewStats()
+	for i := 0; i < b.N; i++ {
+		handlePacket(pkt, stats, nil, nil, nil)
+	}
 }

@@ -69,12 +69,6 @@ import (
 var logger *log.Logger
 var verbose bool
 
-// ProductName is the human-readable name to be shown to the user.
-const ProductName = "Tapirx"
-
-// Version number, filled in via ldflags
-var Version string
-
 func setupLogging(debug bool) {
 	var traceDest io.Writer
 	traceDest = ioutil.Discard
@@ -180,6 +174,10 @@ func main() {
 	// A WaitGroup will let us wait until all threads have finished before exit
 	// http://goinbigdata.com/golang-wait-for-all-goroutines-to-finish/
 	var waitGroup sync.WaitGroup
+
+	if err := buildHL7Queries(); err != nil {
+		panic(err)
+	}
 
 	// Start a new thread for each packet
 	nPackets := 0
