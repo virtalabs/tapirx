@@ -41,6 +41,11 @@ func (decoder *DicomDecoder) Initialize() error {
 	return nil
 }
 
+// Wants returns whether this decoder thinks it can make sense of this application layer.
+func (decoder *DicomDecoder) Wants(app *gopacket.ApplicationLayer) bool {
+	return true
+}
+
 // DecodePayload extracts device identifiers from an application-layer payload.
 func (decoder *DicomDecoder) DecodePayload(app *gopacket.ApplicationLayer) (string, string, error) {
 	var appReader io.Reader = bytes.NewReader((*app).Payload())

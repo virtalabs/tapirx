@@ -44,6 +44,16 @@ func appLayerFromString(s string) *gopacket.ApplicationLayer {
 	return &appLayer
 }
 
+func BenchmarkDiscardNonHL7(b *testing.B) {
+	hl7d := HL7Decoder{}
+	hl7d.Initialize()
+
+	appLayer := appLayerFromString("FOO")
+	for i := 0; i < b.N; i++ {
+		_ = hl7d.Wants(appLayer)
+	}
+}
+
 func TestHL7DecodeTooShort(t *testing.T) {
 	appLayer := appLayerFromString("MSH")
 	ident, _, err := testHl7Decoder.DecodePayload(appLayer)
