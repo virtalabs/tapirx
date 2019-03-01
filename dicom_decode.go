@@ -43,6 +43,7 @@ func (decoder *DicomDecoder) Initialize() error {
 
 // Wants returns whether this decoder thinks it can make sense of this application layer.
 func (decoder *DicomDecoder) Wants(app *gopacket.ApplicationLayer) bool {
+	// TODO: recipe for quickly discarding a non-DICOM payload
 	return true
 }
 
@@ -56,8 +57,8 @@ func (decoder *DicomDecoder) DecodePayload(app *gopacket.ApplicationLayer) (stri
 		logger.Println("Not a DICOM packet")
 		return "", "", fmt.Errorf("Not a DICOM packet")
 	}
-	// Hard code provenance.  Note that we could add information like the HL7
-	// decoder, e.g., "HL7 OBX-18" or "HL7 PRT-16"
+
+	// Hard code provenance (suboptimal but OK)
 	provenance := "DICOM"
 
 	return identifier, provenance, nil

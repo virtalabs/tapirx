@@ -85,8 +85,8 @@ func parseApplicationLayer(packet gopacket.Packet, decoders []PayloadDecoder, as
 	// Update statstics
 	stats.AddLayer("Application")
 
-	// Try to decode the application layer using each decoder in turn, stopping
-	// when a decoder succeeds or there are no decoders remaining.
+	// Try to decode the application layer using each available decoder in turn,
+	// stopping when a decoder succeeds or there are no decoders remaining.
 	for _, decoder := range decoders {
 		if !decoder.Wants(&app) {
 			continue
