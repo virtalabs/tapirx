@@ -11,6 +11,20 @@ import (
 	_ "github.com/google/gopacket/layers"
 )
 
+var testDecoders []PayloadDecoder
+
+func init() {
+	testDecoders = []PayloadDecoder{
+		&HL7Decoder{},
+		&DicomDecoder{},
+	}
+	for _, decoder := range testDecoders {
+		if err := decoder.Initialize(); err != nil {
+			panic("Failed to initialize decoders")
+		}
+	}
+}
+
 func TestPacketParseSimple(t *testing.T) {
 	// Read a small pcap file and process the packets using handlePacket.  Use the
 	// statistics generated at the end to check for correctness.
@@ -18,7 +32,7 @@ func TestPacketParseSimple(t *testing.T) {
 	setupLogging(false)
 
 	// Initialize objects later used by handlePacket
-	stats := NewStats()
+	stats = *NewStats()
 	apiClient := NewAPIClient("", "", "", 1, false)
 	assetCSVWriter, err := NewAssetCSVWriter("")
 	if err != nil {
@@ -35,17 +49,16 @@ func TestPacketParseSimple(t *testing.T) {
 	// Handle each packet from the pcap file
 	var numPackets uint64
 	for packet := range packetSource.Packets() {
-		handlePacket(packet, stats, apiClient, assetCSVWriter, nil)
+		handlePacket(packet, testDecoders, apiClient, assetCSVWriter, nil)
 		numPackets++
 	}
 
 	// Check stats
-	if stats.Provenances["HL7 PRT-16"] != 1 {
-		t.Errorf("Not enough HL7 packets")
+	if nPrt16 := stats.Provenances["HL7 PRT-16"]; nPrt16 != 1 {
+		t.Errorf("Not enough HL7 packets: %d (wanted %d)", nPrt16, 1)
 	}
-	if stats.TotalPacketCount != numPackets {
-		t.Errorf("Wrong total packet count: %d (wanted %d)",
-			stats.TotalPacketCount, numPackets)
+	if nPkts := stats.TotalPacketCount; nPkts != numPackets {
+		t.Errorf("Wrong total packet count: %d (wanted %d)", nPkts, numPackets)
 	}
 
 }
@@ -54,8 +67,8 @@ func TestPacketParseSimple(t *testing.T) {
 func TestSkipEmptyPacket(t *testing.T) {
 	var data []byte
 	pkt := gopacket.NewPacket(data, layers.LayerTypeEthernet, gopacket.Default)
-	stats := NewStats()
-	handlePacket(pkt, stats, nil, nil, nil)
+	stats = *NewStats()
+	handlePacket(pkt, testDecoders, nil, nil, nil)
 
 	if stats.TotalPacketCount != 1 {
 		t.Errorf("Wrong number of packets")
@@ -70,8 +83,8 @@ func TestSkipEmptyPacket(t *testing.T) {
 func BenchmarkSkipEmptyPacket(b *testing.B) {
 	var data []byte
 	pkt := gopacket.NewPacket(data, layers.LayerTypeEthernet, gopacket.Default)
-	stats := NewStats()
+	stats = *NewStats()
 	for i := 0; i < b.N; i++ {
-		handlePacket(pkt, stats, nil, nil, nil)
+		handlePacket(pkt, testDecoders, nil, nil, nil)
 	}
 }

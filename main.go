@@ -66,8 +66,11 @@ import (
 	_ "github.com/google/gopacket/layers"
 )
 
-var logger *log.Logger
-var verbose bool
+var (
+	logger  *log.Logger
+	verbose bool
+	stats   Stats
+)
 
 func setupLogging(debug bool) {
 	var traceDest io.Writer
@@ -78,10 +81,30 @@ func setupLogging(debug bool) {
 	logger = log.New(traceDest, "INFO: ", log.LstdFlags)
 }
 
+func listInterfaces() {
+	ifaces, err := pcap.FindAllDevs()
+	if err != nil {
+		panic(err)
+	}
+	for _, iface := range ifaces {
+		if runtime.GOOS == "windows" {
+			// On Windows, device names are ugly, like
+			// "\Device\NPF_{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}",
+			// so display a more descriptive name too.
+			fmt.Printf("%s\t(%s)\n", iface.Name, iface.Description)
+		} else {
+			fmt.Println(iface.Name)
+		}
+	}
+}
+
 func main() {
 	// Default client ID is this computer's hostname
-	hostname, _ := os.Hostname()
-	osName := runtime.GOOS
+	hostname, err := os.Hostname()
+	if err != nil {
+		logger.Println("Failed to get hostname")
+		hostname = "localhost"
+	}
 
 	// parse command-line flags
 	flag.BoolVar(&verbose, "verbose", false, "Show verbose output")
@@ -102,6 +125,7 @@ func main() {
 	flag.Parse()
 
 	setupLogging(*debug)
+	stats = *NewStats()
 
 	if *version {
 		fmt.Printf("%s %s\n", ProductName, Version)
@@ -109,30 +133,14 @@ func main() {
 	}
 
 	if *listIfaces {
-		ifaces, err := pcap.FindAllDevs()
-		if err != nil {
-			panic(err)
-		}
-		for _, iface := range ifaces {
-			if osName == "windows" {
-				// On Windows, device names are ugly, like
-				// "\Device\NPF_{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}",
-				// so display a more descriptive name too.
-				fmt.Printf("%s\t(%s)\n", iface.Name, iface.Description)
-			} else {
-				fmt.Println(iface.Name)
-			}
-		}
+		listInterfaces()
 		os.Exit(0)
 	}
 
-	logger.Printf("starting %s %s (%s)\n", ProductName, Version, osName)
+	logger.Printf("starting %s %s (%s)\n", ProductName, Version, runtime.GOOS)
 	defer logger.Printf("exiting %s\n", ProductName)
 
-	var (
-		handle *pcap.Handle
-		err    error
-	)
+	var handle *pcap.Handle
 	// Read from file or from interface (and bail if there's a failure)
 	if *fileName != "" {
 		logger.Printf("read from file %v\n", *fileName)
@@ -155,9 +163,6 @@ func main() {
 
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
 
-	// Configure statistics tracking module
-	stats := NewStats()
-
 	// Configure the API client module
 	apiClientEnabled := *apiURL != ""
 	apiClient := NewAPIClient(*apiURL, *apiToken, *clientID, *apiLimit, apiClientEnabled)
@@ -175,11 +180,19 @@ func main() {
 	// http://goinbigdata.com/golang-wait-for-all-goroutines-to-finish/
 	var waitGroup sync.WaitGroup
 
-	if err := buildHL7Queries(); err != nil {
-		panic(err)
+	// Make a set of decoders against which each incoming packet will be tested.
+	appLayerDecoders := []PayloadDecoder{
+		&HL7Decoder{},
+		&DicomDecoder{},
+	}
+	for _, decoder := range appLayerDecoders {
+		if err := decoder.Initialize(); err != nil {
+			panic(err)
+		}
 	}
 
-	// Start a new thread for each packet
+	// Handle a sequence of packets. If sequential is set, handle every packet in the main thread.
+	// Otherwise, spawn a goroutine for each packet.
 	nPackets := 0
 	for packet := range packetSource.Packets() {
 		if *packetLimit > 0 && nPackets >= *packetLimit {
@@ -188,9 +201,9 @@ func main() {
 		}
 		waitGroup.Add(1)
 		if *sequential {
-			handlePacket(packet, stats, apiClient, assetCSVWriter, &waitGroup)
+			handlePacket(packet, appLayerDecoders, apiClient, assetCSVWriter, &waitGroup)
 		} else {
-			go handlePacket(packet, stats, apiClient, assetCSVWriter, &waitGroup)
+			go handlePacket(packet, appLayerDecoders, apiClient, assetCSVWriter, &waitGroup)
 		}
 		nPackets++
 	}
@@ -200,7 +213,7 @@ func main() {
 
 	// Print stats
 	if *statsFlag {
-		fmt.Println(stats)
+		fmt.Println(stats.String())
 	}
 
 }

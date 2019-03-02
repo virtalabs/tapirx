@@ -10,8 +10,10 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
+var testHl7Decoder HL7Decoder
+
 func init() {
-	if err := buildHL7Queries(); err != nil {
+	if err := testHl7Decoder.Initialize(); err != nil {
 		panic("Failed to build queries")
 	}
 }
@@ -29,7 +31,7 @@ func TestHL7DecodeFile(t *testing.T) {
 			continue // Ignore packets without an application layer
 		}
 
-		_, _, err := hl7Decode(&app)
+		_, _, err := testHl7Decoder.DecodePayload(&app)
 		if err != nil {
 			panic(err)
 		}
@@ -44,7 +46,7 @@ func appLayerFromString(s string) *gopacket.ApplicationLayer {
 
 func TestHL7DecodeTooShort(t *testing.T) {
 	appLayer := appLayerFromString("MSH")
-	ident, _, err := hl7Decode(appLayer)
+	ident, _, err := testHl7Decoder.DecodePayload(appLayer)
 	if ident != "" {
 		t.Errorf("Got identifier when none was expected")
 	}
@@ -55,7 +57,7 @@ func TestHL7DecodeTooShort(t *testing.T) {
 
 func testHL7DecodeEmpty(s string, t *testing.T) {
 	appLayer := appLayerFromString(s)
-	ident, _, err := hl7Decode(appLayer)
+	ident, _, err := testHl7Decoder.DecodePayload(appLayer)
 	if ident != "" {
 		t.Errorf("Got identifier when none was expected")
 	}
@@ -69,7 +71,7 @@ func TestHL7DecodeEmpty2(t *testing.T) { testHL7DecodeEmpty("MSH|^~\\&|", t) }
 
 func identFromString(s string) string {
 	appLayer := appLayerFromString(s)
-	ident, _, err := hl7Decode(appLayer)
+	ident, _, err := testHl7Decoder.DecodePayload(appLayer)
 	if err != nil {
 		panic(err)
 	}
@@ -144,6 +146,14 @@ func TestHL7IdentFromPRT16(t *testing.T) {
 	str := okHL7Header + "PRT|" + getNRecordString(15) + "|Grospira Peach B+\r"
 	parsed := identFromString(str)
 	if parsed != "Grospira Peach B+" {
+		t.Errorf("Failed to parse identifier from string; got '%s'", parsed)
+	}
+}
+
+func TestHL7IdentFromPrt16TrailingPipes(t *testing.T) {
+	str := okHL7Header + "PRT|A|B|C|D|E|F|G|H|I|||||||Grospira Pluot C+||||\r"
+	parsed := identFromString(str)
+	if parsed != "Grospira Pluot C+" {
 		t.Errorf("Failed to parse identifier from string; got '%s'", parsed)
 	}
 }

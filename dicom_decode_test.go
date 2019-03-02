@@ -15,6 +15,14 @@ import (
 	_ "github.com/google/gopacket/layers"
 )
 
+var dicomDecoder DicomDecoder
+
+func init() {
+	if err := dicomDecoder.Initialize(); err != nil {
+		panic("Failed to initialize DICOM decoder")
+	}
+}
+
 func TestDicomFile(t *testing.T) {
 	testfiles, err := filepath.Glob("testdata/dicom*.pcap")
 	if err != nil {
@@ -45,7 +53,7 @@ func findDicomIdentifierInPcap(testfile string) string {
 		if app == nil {
 			continue // Ignore packets without an application layer
 		}
-		identifier, _, _ = dicomDecode(&app)
+		identifier, _, _ = dicomDecoder.DecodePayload(&app)
 		if identifier != "" {
 			break // Found an identifier in one of the packets, breaking out of the loop
 		}
@@ -73,7 +81,7 @@ func TestDicomAppLayerGood(t *testing.T) {
 	copy(appBytes, goodAppLayerBytes)
 
 	appLayer := gopacket.ApplicationLayer(gopacket.Payload(appBytes))
-	identifier, _, _ := dicomDecode(&appLayer)
+	identifier, _, _ := dicomDecoder.DecodePayload(&appLayer)
 
 	if identifier == "" {
 		t.Errorf("Failed to find identifier in payload %s", appBytes)
@@ -90,7 +98,7 @@ func BenchmarkDicomDecode(b *testing.B) {
 	appLayer := gopacket.ApplicationLayer(gopacket.Payload(appBytes))
 
 	for i := 0; i < b.N; i++ {
-		dicomDecode(&appLayer)
+		dicomDecoder.DecodePayload(&appLayer)
 	}
 }
 
@@ -121,7 +129,7 @@ func TestAETitleWhitespace(t *testing.T) {
 		copy(appBytes[offsetCallingAET:], []byte(tt.callingTitle))
 
 		appLayer := gopacket.ApplicationLayer(gopacket.Payload(appBytes))
-		identifier, _, _ := dicomDecode(&appLayer)
+		identifier, _, _ := dicomDecoder.DecodePayload(&appLayer)
 		if identifier != tt.expectedID {
 			t.Errorf("Bad identifier: expected '%s', got '%s'", tt.expectedID, identifier)
 		}
@@ -155,7 +163,7 @@ func TestAEBadBytes(t *testing.T) {
 		appBytes[tt.offset] = tt.badByte
 
 		appLayer := gopacket.ApplicationLayer(gopacket.Payload(appBytes))
-		identifier, _, _ := dicomDecode(&appLayer)
+		identifier, _, _ := dicomDecoder.DecodePayload(&appLayer)
 		if identifier != "" {
 			t.Errorf("Bad byte '%x' in offset '%d' should have caused decoding to fail", tt.badByte, tt.offset)
 		}
