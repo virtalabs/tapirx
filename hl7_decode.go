@@ -96,24 +96,6 @@ func (decoder *HL7Decoder) Initialize() error {
 	return nil
 }
 
-// Wants returns whether this decoder thinks it can make sense of this application layer.
-func (decoder *HL7Decoder) Wants(app *gopacket.ApplicationLayer) bool {
-	// An HL7 payload starts with "MSH", which stands for "Message Header".
-	// In some implementations, messages are preceded by a control character like '\v'.
-	payloadBytes := (*app).Payload()
-
-	switch {
-	case len(payloadBytes) < 3:
-		return false
-	case bytes.Compare(mshHeader, payloadBytes[:3]) == 0:
-		return true
-	case bytes.Compare(mshHeader, payloadBytes[1:4]) == 0:
-		return true
-	default:
-		return false
-	}
-}
-
 // DecodePayload extracts device identifiers from an application-layer payload.
 func (decoder *HL7Decoder) DecodePayload(app *gopacket.ApplicationLayer) (string, string, error) {
 	payloadBytes := (*app).Payload()

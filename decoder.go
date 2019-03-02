@@ -11,7 +11,6 @@ import "github.com/google/gopacket"
 type PayloadDecoder interface {
 	Name() string
 	Initialize() error
-	Wants(app *gopacket.ApplicationLayer) bool
 	DecodePayload(app *gopacket.ApplicationLayer) (string, string, error)
 	String() string
 }
