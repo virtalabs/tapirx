@@ -137,6 +137,11 @@ func main() {
 		os.Exit(0)
 	}
 
+	if *statsFlag {
+		// Print stats before exit via Ctrl-C-esque interrupt
+		registerInterruptHandler()
+	}
+
 	logger.Printf("starting %s %s (%s)\n", ProductName, Version, runtime.GOOS)
 	defer logger.Printf("exiting %s\n", ProductName)
 
