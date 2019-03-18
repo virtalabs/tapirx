@@ -45,7 +45,7 @@ func appLayerFromString(s string) *gopacket.ApplicationLayer {
 }
 
 func TestHL7DecodeTooShort(t *testing.T) {
-	appLayer := appLayerFromString("MSH")
+	appLayer := appLayerFromString(".")
 	ident, _, err := testHl7Decoder.DecodePayload(appLayer)
 	if ident != "" {
 		t.Errorf("Got identifier when none was expected")
