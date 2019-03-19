@@ -16,20 +16,24 @@ discovery out of the box:
 
 [Install Go](https://golang.org/doc/install), then install Tapirx:
 
-    $ go get github.com/virtalabs/tapirx
+    $ go get -u -v github.com/virtalabs/tapirx
+
+If you already have Tapirx installed, the above command will update you to the
+latest version.
 
 (See [Windows instructions](#Building-on-Windows) below if you run into trouble
 on Windows.)
 
 Read a sample pcap file (included with this package) and output JSON data:
 
-    $ tapirx -pcap testdata/HL7-ADT-UDI-PRT.pcap -verbose
+    $ SRC=$(go env GOPATH)/src/github.com/virtalabs/tapirx
+    $ tapirx -pcap "$SRC"/testdata/HL7-ADT-UDI-PRT.pcap -verbose
 
 List your network interfaces, then sniff live traffic and display discovered
 device data:
 
     $ tapirx -interfaces   # show a list of interfaces available for capture
-    $ tapirx -iface <interface_name> -verbose
+    $ sudo tapirx -iface <interface_name> -verbose
 
 Read on to understand how to share discovered asset information with other
 tools to fit your workflow.
@@ -52,7 +56,7 @@ On the machine you've connected to the SPAN port, you should begin to see
 device information as the other connected devices on the switch generate HL7 or
 DICOM traffic:
 
-    $ tapirx -iface <your_ethernet_interface> -verbose
+    $ sudo tapirx -iface <your_ethernet_interface> -verbose
 
 (On Windows, you may need to run `tapirx -interfaces` to find the appropriate
 interface name to pass to `-iface`, which will look like
@@ -127,7 +131,7 @@ but it's within reach with a tiny bit of elbow grease:
 - Download and install [Go](https://golang.org/dl/)
 - Download and install [TDM-GCC](http://tdm-gcc.tdragon.net/)
 - Install [WinPcap](https://www.winpcap.org/install/) and the [WinPcap developer pack](https://www.winpcap.org/devel.htm)
-- Start a new command prompt and `go get github.com/virtalabs/tapirx`
+- Start a new command prompt and `go get -u -v github.com/virtalabs/tapirx`
 
 (This procedure will become easier once gopacket supports npcap; see
 @google/gopacket#568.)
@@ -136,17 +140,30 @@ but it's within reach with a tiny bit of elbow grease:
 
 You will need to install `libpcap` development headers, which fortunately are
 in most distributions' main repositories. After you have done so, the quick
-start instructions should work properly.
+start instructions above should work properly.
 
 Ubuntu (or other Debian-based distributions):
 
-    $ sudo apt install libpcap-dev
+    $ sudo apt install build-essential libpcap-dev
 
 RHEL7 or CentOS:
 
-    $ sudo yum install libpcap-devel
+    $ sudo yum install gcc libpcap-devel
+
+## Building on macOS
+
+If you've never built programs from source, you may have to run `xcode-select
+--install` to install Apple's collection of command-line tools. Once you've
+done that, the quick start instructions above should work properly.
 
 # Tests and Benchmarking
+
+To find sample pcap files for experimentation, look in this repository's
+[testdata directory](testdata/) or the `testdata` directory on your own
+computer:
+
+    $ cd $(go env GOPATH)/src/github.com/virtalabs/tapirx/testdata
+    $ ls -l *.pcap
 
 Run `go test github.com/virtalabs/tapirx` to run the test suite.
 
@@ -161,7 +178,7 @@ Incoming data, whether live or from a file, can be filtered using
 [BPF](https://en.wikipedia.org/wiki/Berkeley_Packet_Filter) expressions.  For
 example, if we want to sniff port 2575 (common for HL7 traffic):
 
-    $ tapirx -iface <interface_name> -bpf 'port 2575' -verbose
+    $ sudo tapirx -iface <interface_name> -bpf 'port 2575' -verbose
 
 ## What does "discover" mean?
 
