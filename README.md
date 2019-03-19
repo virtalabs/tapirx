@@ -16,7 +16,10 @@ discovery out of the box:
 
 [Install Go](https://golang.org/doc/install), then install Tapirx:
 
-    $ go get github.com/virtalabs/tapirx
+    $ go get -u -v github.com/virtalabs/tapirx
+
+If you already have Tapirx installed, the above command will update you to the
+latest version.
 
 (See [Windows instructions](#Building-on-Windows) below if you run into trouble
 on Windows.)
@@ -128,7 +131,7 @@ but it's within reach with a tiny bit of elbow grease:
 - Download and install [Go](https://golang.org/dl/)
 - Download and install [TDM-GCC](http://tdm-gcc.tdragon.net/)
 - Install [WinPcap](https://www.winpcap.org/install/) and the [WinPcap developer pack](https://www.winpcap.org/devel.htm)
-- Start a new command prompt and `go get github.com/virtalabs/tapirx`
+- Start a new command prompt and `go get -u -v github.com/virtalabs/tapirx`
 
 (This procedure will become easier once gopacket supports npcap; see
 @google/gopacket#568.)
