@@ -8,6 +8,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"net"
 	"sync"
 	"time"
 
@@ -27,10 +28,12 @@ func decodeLayers(packet gopacket.Packet, asset *Asset) error {
 	// Docs:
 	// https://godoc.org/github.com/google/gopacket#hdr-Fast_Decoding_With_DecodingLayerParser
 	var eth layers.Ethernet
+	var arp layers.ARP
 	var ip4 layers.IPv4
 	var ip6 layers.IPv6
 	var tcp layers.TCP
-	parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet, &eth, &ip4, &ip6, &tcp)
+	parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet,
+		&eth, &arp, &ip4, &ip6, &tcp)
 	decoded := []gopacket.LayerType{}
 	logger.Println("Decode packet")
 	parser.DecodeLayers(packet.Data(), &decoded)
@@ -40,6 +43,12 @@ func decodeLayers(packet gopacket.Packet, asset *Asset) error {
 			asset.MACAddress = eth.SrcMAC.String()
 			stats.AddLayer("Ethernet")
 			logger.Println("  Eth", eth.SrcMAC, eth.DstMAC)
+		case layers.LayerTypeARP:
+			stats.AddLayer("ARP")
+			if arp.Operation == layers.ARPReply {
+				logger.Printf("  ARP Reply: %v is at %v",
+					net.HardwareAddr(arp.SourceHwAddress), net.IP(arp.SourceProtAddress))
+			}
 		case layers.LayerTypeIPv4:
 			asset.IPv4Address = ip4.SrcIP.String()
 			stats.AddLayer("IPv4")
