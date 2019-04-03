@@ -266,6 +266,8 @@ The original authors of this project are Andrew DeOrio (@awdeorio), Henrik Holm
 (@ukrutt), and Ben Ransford (@ransford) of [Virta
 Labs](https://virtalabs.com/).
 
+# Third-Party Dependencies (Bill of Materials)
+
 This project would be far more complex if it weren't for the following
 open-source software:
 
