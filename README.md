@@ -274,3 +274,7 @@ open-source software:
 - [google/gopacket](https://github.com/google/gopacket/)
 - [deoxxa/hl7](https://github.com/deoxxa/hl7)
 - [grailbio/go-netdicom](https://github.com/grailbio/go-netdicom/)
+
+To see a list of third-party dependencies:
+
+    $ go list -f '{{ join .Imports "\n" }}' github.com/virtalabs/tapirx | grep github
