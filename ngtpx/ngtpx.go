@@ -108,14 +108,16 @@ func main() {
 
 	netStats = NewNetStats()
 	defer fmt.Printf("%v\n", netStats)
-	readPacketsFromHandle(handle)
+
+	numWorkers := runtime.NumCPU()
+	readPacketsFromHandle(handle, numWorkers)
 }
 
-func readPacketsFromHandle(handle *pcap.Handle) {
+func readPacketsFromHandle(handle *pcap.Handle, numWorkers int) {
 	packets := gopacket.NewPacketSource(handle, handle.LinkType())
 	pchan := packets.Packets()
 	var wg sync.WaitGroup
-	for i := 0; i < runtime.NumCPU(); i++ {
+	for i := 0; i < numWorkers; i++ {
 		wg.Add(1)
 		go readPacketsWithDecodingLayerParser(pchan, &wg)
 	}
