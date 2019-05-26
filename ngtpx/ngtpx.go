@@ -15,17 +15,20 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
+// NetStats holds network statistics during execution.
 type NetStats struct {
 	sync.Mutex
 	decodingErrors map[string]int
 }
 
+// NewNetStats returns a new NetStats object.
 func NewNetStats() *NetStats {
 	ns := &NetStats{}
 	ns.decodingErrors = make(map[string]int)
 	return ns
 }
 
+// AddDecodingError records that a single decoding error occurred.
 func (n *NetStats) AddDecodingError(err error) {
 	n.Lock()
 	defer n.Unlock()
