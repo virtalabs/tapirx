@@ -91,8 +91,8 @@ func readPacketsFromHandle(handle *pcap.Handle, numWorkers int) {
 	packets := gopacket.NewPacketSource(handle, handle.LinkType())
 	pchan := packets.Packets()
 	var wg sync.WaitGroup
+	wg.Add(numWorkers)
 	for i := 0; i < numWorkers; i++ {
-		wg.Add(1)
 		go readPacketsWithDecodingLayerParser(pchan, &wg)
 	}
 	wg.Wait()
