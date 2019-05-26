@@ -42,7 +42,9 @@ var (
 	fileName     = flag.String("pcap", "", "pcap file to read")
 	iface        = flag.String("iface", "", "interface to listen on")
 	emitInterval = flag.Int("emit-interval", 10,
-		"how often (in seconds) to emit assets to an API endpoint")
+		"How often (in seconds) to emit assets to an API endpoint")
+	numWorkers = flag.Int("workers", runtime.NumCPU(),
+		"Number of concurrent processes decoding packets")
 
 	arpTable *ArpTable
 	netStats *NetStats
@@ -82,8 +84,7 @@ func main() {
 	netStats = NewNetStats()
 	defer fmt.Printf("%v\n", netStats)
 
-	numWorkers := runtime.NumCPU()
-	readPacketsFromHandle(handle, numWorkers)
+	readPacketsFromHandle(handle, *numWorkers)
 }
 
 func readPacketsFromHandle(handle *pcap.Handle, numWorkers int) {
