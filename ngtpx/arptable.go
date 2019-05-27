@@ -15,9 +15,8 @@ type ArpTable struct {
 // Add adds an ARP table entry.
 func (a *ArpTable) Add(hwAddr net.HardwareAddr, ip net.IP) {
 	a.Lock()
-	defer a.Unlock()
-
 	a.arpTable[string(hwAddr)] = ip
+	a.Unlock()
 }
 
 // Print prints the ARP table.
