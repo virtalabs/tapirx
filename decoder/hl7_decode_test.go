@@ -3,6 +3,8 @@
 package decoder
 
 import (
+	"io/ioutil"
+	"log"
 	"strings"
 	"testing"
 
@@ -10,16 +12,18 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
-var testHl7Decoder HL7Decoder
+var testHl7Decoder *HL7Decoder
 
 func init() {
+	logger := log.New(ioutil.Discard, "", log.LstdFlags)
+	testHl7Decoder = &HL7Decoder{Logger: logger}
 	if err := testHl7Decoder.Initialize(); err != nil {
 		panic("Failed to build queries")
 	}
 }
 
 func TestHL7DecodeFile(t *testing.T) {
-	handle, err := pcap.OpenOffline("testdata/HL7-ADT-UDI-PRT.pcap")
+	handle, err := pcap.OpenOffline("../testdata/HL7-ADT-UDI-PRT.pcap")
 	if err != nil {
 		panic(err)
 	}

@@ -5,6 +5,8 @@ Unit tests for dicom decoder
 package decoder
 
 import (
+	"io/ioutil"
+	"log"
 	"path/filepath"
 	"testing"
 
@@ -15,16 +17,18 @@ import (
 	_ "github.com/google/gopacket/layers"
 )
 
-var dicomDecoder DicomDecoder
+var dicomDecoder *DicomDecoder
 
 func init() {
+	logger := log.New(ioutil.Discard, "", log.LstdFlags)
+	dicomDecoder = &DicomDecoder{Logger: logger}
 	if err := dicomDecoder.Initialize(); err != nil {
 		panic("Failed to initialize DICOM decoder")
 	}
 }
 
 func TestDicomFile(t *testing.T) {
-	testfiles, err := filepath.Glob("testdata/dicom*.pcap")
+	testfiles, err := filepath.Glob("../testdata/dicom*.pcap")
 	if err != nil {
 		panic(err)
 	}

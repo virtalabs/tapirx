@@ -31,27 +31,27 @@ type DicomDecoder struct {
 }
 
 // Name returns the name of the decoder.
-func (decoder DicomDecoder) Name() string {
+func (d DicomDecoder) Name() string {
 	return "DICOM"
 }
 
-func (decoder DicomDecoder) String() string {
-	return decoder.Name()
+func (d DicomDecoder) String() string {
+	return d.Name()
 }
 
 // Initialize does nothing.
-func (decoder *DicomDecoder) Initialize() error {
+func (d DicomDecoder) Initialize() error {
 	return nil
 }
 
 // DecodePayload extracts device identifiers from an application-layer payload.
-func (decoder *DicomDecoder) DecodePayload(app *gopacket.ApplicationLayer) (string, string, error) {
+func (d *DicomDecoder) DecodePayload(app *gopacket.ApplicationLayer) (string, string, error) {
 	var appReader io.Reader = bytes.NewReader((*app).Payload())
 
 	identifier, err := detectDicomAssociateIdentifier(appReader)
 
 	if err != nil {
-		decoder.Logger.Println("Not a DICOM packet")
+		d.Logger.Println("Not a DICOM packet")
 		return "", "", fmt.Errorf("Not a DICOM packet")
 	}
 

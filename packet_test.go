@@ -1,25 +1,29 @@
 package main
 
 import (
+	"io/ioutil"
+	"log"
 	"testing"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
+	"github.com/virtalabs/tapirx/decoder"
 
 	// import layers to run its init function
 	_ "github.com/google/gopacket/layers"
 )
 
-var testDecoders []PayloadDecoder
+var testDecoders []decoder.PayloadDecoder
 
 func init() {
-	testDecoders = []PayloadDecoder{
-		&HL7Decoder{},
-		&DicomDecoder{},
+	logger := log.New(ioutil.Discard, "", log.LstdFlags)
+	testDecoders = []decoder.PayloadDecoder{
+		&decoder.HL7Decoder{Logger: logger},
+		&decoder.DicomDecoder{Logger: logger},
 	}
-	for _, decoder := range testDecoders {
-		if err := decoder.Initialize(); err != nil {
+	for _, testDecoder := range testDecoders {
+		if err := testDecoder.Initialize(); err != nil {
 			panic("Failed to initialize decoders")
 		}
 	}
