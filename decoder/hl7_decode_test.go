@@ -1,6 +1,6 @@
 // Unit tests for HL7 v2 decoding
 
-package main
+package decoder
 
 import (
 	"strings"

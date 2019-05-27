@@ -13,6 +13,7 @@ import (
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
+	"github.com/virtalabs/tapirx/decoder"
 )
 
 // decodeLayers extracts information from packets and stuffs any discovered
@@ -76,7 +77,7 @@ func decodeLayers(packet gopacket.Packet, asset *Asset) error {
 
 // parseApplicationLayer extracts information from a packet's application layer,
 // if one exists, and updates a provided Asset object.
-func parseApplicationLayer(packet gopacket.Packet, decoders []PayloadDecoder, asset *Asset) error {
+func parseApplicationLayer(packet gopacket.Packet, decoders []decoder.PayloadDecoder, asset *Asset) error {
 	app := packet.ApplicationLayer()
 	if app == nil {
 		return fmt.Errorf("No application layer")
@@ -111,7 +112,7 @@ func parseApplicationLayer(packet gopacket.Packet, decoders []PayloadDecoder, as
 // API endpoint.
 func handlePacket(
 	packet gopacket.Packet,
-	appLayerDecoders []PayloadDecoder,
+	appLayerDecoders []decoder.PayloadDecoder,
 	apiClient *APIClient,
 	assetCSVWriter *AssetCSVWriter,
 	waitGroup *sync.WaitGroup,

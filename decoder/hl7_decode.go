@@ -8,11 +8,12 @@ specification, which is long and boring.  A quick overview is at
 https://www.fknsrs.biz/blog/golang-hl7-library.html.
 */
 
-package main
+package decoder
 
 import (
 	"bytes"
 	"fmt"
+	"log"
 
 	"strings"
 
@@ -51,6 +52,7 @@ var mshHeader = []byte{77, 83, 72} // "MSH"
 // HL7Decoder receives application-layer payloads and, when possible, extracts
 // identifying information from HL7 messages therein.
 type HL7Decoder struct {
+	Logger *log.Logger
 	// Compiled HL7 queries to be matched against
 	hl7Queries []HL7Query
 }
@@ -110,7 +112,7 @@ func (decoder *HL7Decoder) DecodePayload(app *gopacket.ApplicationLayer) (string
 		// Ignore messages that don't start with "MSH"
 		return "", "", fmt.Errorf("Not an HL7 packet (no header)")
 	}
-	logger.Println("Found HL7 header")
+	decoder.Logger.Println("Found HL7 header")
 
 	// Print HL7 payload
 	//
@@ -122,18 +124,18 @@ func (decoder *HL7Decoder) DecodePayload(app *gopacket.ApplicationLayer) (string
 	// non-ASCII data in the string:
 	//
 	// Print a raw Payload with escaped non-ASCII printing characters:
-	// logger.Printf("%+q\n", string(app.Payload()))
+	// decoder.Logger.Printf("%+q\n", string(app.Payload()))
 	payloadStr := string(payloadBytes)
-	logger.Println("  HL7 PAYLOAD")
+	decoder.Logger.Println("  HL7 PAYLOAD")
 	for _, segment := range strings.Split(payloadStr, "\r") {
-		logger.Printf("    %+q\n", segment)
+		decoder.Logger.Printf("    %+q\n", segment)
 	}
 
 	// Parse HL7 payload
 	var message hl7.Message
 	message, _, err := hl7.ParseMessage(payloadBytes)
 	if err != nil {
-		logger.Println("Error parsing HL7 payload")
+		decoder.Logger.Println("Error parsing HL7 payload")
 		return "", "", err
 	}
 
@@ -160,14 +162,14 @@ func (decoder *HL7Decoder) DecodePayload(app *gopacket.ApplicationLayer) (string
 
 	for _, query := range decoder.hl7Queries {
 		if ident := query.hl7Query.GetString(message); ident != "" {
-			logger.Printf("  Found HL7 identifier in %s segment", query.hl7Field)
+			decoder.Logger.Printf("  Found HL7 identifier in %s segment", query.hl7Field)
 			identifier = ident
 			provenance = "HL7 " + query.hl7Field
 			break
 		}
 	}
 
-	logger.Printf("  HL7 identifier: [%s] (provenance: %s)", identifier, provenance)
+	decoder.Logger.Printf("  HL7 identifier: [%s] (provenance: %s)", identifier, provenance)
 
 	return identifier, provenance, nil
 }

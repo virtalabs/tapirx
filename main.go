@@ -64,6 +64,8 @@ import (
 
 	// import layers to run its init function
 	_ "github.com/google/gopacket/layers"
+
+	"github.com/virtalabs/tapirx/decoder"
 )
 
 var (
@@ -186,9 +188,9 @@ func main() {
 	var waitGroup sync.WaitGroup
 
 	// Make a set of decoders against which each incoming packet will be tested.
-	appLayerDecoders := []PayloadDecoder{
-		&HL7Decoder{},
-		&DicomDecoder{},
+	appLayerDecoders := []decoder.PayloadDecoder{
+		&decoder.HL7Decoder{Logger: logger},
+		&decoder.DicomDecoder{Logger: logger},
 	}
 	for _, decoder := range appLayerDecoders {
 		if err := decoder.Initialize(); err != nil {

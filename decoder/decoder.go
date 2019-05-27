@@ -3,7 +3,7 @@
 Decoder definitions.
 */
 
-package main
+package decoder
 
 import "github.com/google/gopacket"
 

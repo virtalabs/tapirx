@@ -2,7 +2,7 @@
 Unit tests for dicom decoder
 */
 
-package main
+package decoder
 
 import (
 	"path/filepath"

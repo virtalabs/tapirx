@@ -4,13 +4,14 @@ dicom_decode: Inspect an application layer, detect if it is a DICOM
 			  packet, try to extract identifier.
 */
 
-package main
+package decoder
 
 import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
 	"io"
+	"log"
 	"strings"
 
 	"github.com/google/gopacket"
@@ -25,7 +26,9 @@ const typeAAssociateRq = 0x01
 
 // DicomDecoder receives application-layer payloads and, when possible, extracts
 // identifying information from DICOM messages therein.
-type DicomDecoder struct{}
+type DicomDecoder struct {
+	Logger *log.Logger
+}
 
 // Name returns the name of the decoder.
 func (decoder DicomDecoder) Name() string {
@@ -48,7 +51,7 @@ func (decoder *DicomDecoder) DecodePayload(app *gopacket.ApplicationLayer) (stri
 	identifier, err := detectDicomAssociateIdentifier(appReader)
 
 	if err != nil {
-		logger.Println("Not a DICOM packet")
+		decoder.Logger.Println("Not a DICOM packet")
 		return "", "", fmt.Errorf("Not a DICOM packet")
 	}
 
