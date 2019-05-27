@@ -16,29 +16,6 @@ import (
 	"github.com/virtalabs/tapirx/decoder"
 )
 
-// NetStats holds network statistics during execution.
-type NetStats struct {
-	sync.Mutex
-	decodingErrors map[string]int
-}
-
-// NewNetStats returns a new NetStats object.
-func NewNetStats() *NetStats {
-	ns := &NetStats{}
-	ns.decodingErrors = make(map[string]int)
-	return ns
-}
-
-// AddDecodingError records that a single decoding error occurred.
-func (n *NetStats) AddDecodingError(err error) {
-	n.Lock()
-	defer n.Unlock()
-
-	if err != nil {
-		n.decodingErrors[err.Error()]++
-	}
-}
-
 var (
 	fileName     = flag.String("pcap", "", "pcap file to read")
 	iface        = flag.String("iface", "", "interface to listen on")
@@ -48,9 +25,7 @@ var (
 		"Number of concurrent processes decoding packets")
 
 	arpTable *ArpTable
-	netStats *NetStats
-
-	logger log.Logger
+	logger   log.Logger
 )
 
 func main() {
@@ -84,9 +59,6 @@ func main() {
 			arpTable.Print()
 		}
 	}()
-
-	netStats = NewNetStats()
-	defer fmt.Printf("%v\n", netStats)
 
 	readPacketsFromHandle(handle, *numWorkers)
 }
@@ -135,7 +107,6 @@ func readPacketsWithDecodingLayerParser(pchan <-chan gopacket.Packet, wg *sync.W
 		err := parser.DecodeLayers(packet.Data(), &decodedLayers)
 		if err != nil {
 			// decoding stack doesn't know how to decode this packet
-			netStats.AddDecodingError(err)
 			continue
 		}
 
