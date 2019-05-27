@@ -13,6 +13,7 @@ import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
+	"github.com/virtalabs/tapirx/decoder"
 )
 
 // NetStats holds network statistics during execution.
@@ -48,9 +49,12 @@ var (
 
 	arpTable *ArpTable
 	netStats *NetStats
+
+	logger log.Logger
 )
 
 func main() {
+	logger = *log.New(os.Stderr, "INFO: ", log.LstdFlags)
 	flag.Parse()
 
 	// Check that the user provided either a pcap file or an interface on whih to listen (not both)
@@ -114,6 +118,17 @@ func readPacketsWithDecodingLayerParser(pchan <-chan gopacket.Packet, wg *sync.W
 		&eth, &arp, &ip4, &ip6, &udp, &tcp, &payload)
 	decodedLayers := []gopacket.LayerType{}
 
+	// Make a set of decoders against which each incoming packet will be tested.
+	appLayerDecoders := []decoder.PayloadDecoder{
+		&decoder.HL7Decoder{Logger: &logger},
+		&decoder.DicomDecoder{Logger: &logger},
+	}
+	for _, decoder := range appLayerDecoders {
+		if err := decoder.Initialize(); err != nil {
+			panic(err)
+		}
+	}
+
 	defer wg.Done()
 
 	for packet := range pchan {
@@ -128,7 +143,7 @@ func readPacketsWithDecodingLayerParser(pchan <-chan gopacket.Packet, wg *sync.W
 			switch layerType {
 			case layers.LayerTypeARP:
 				if arp.Operation == layers.ARPReply {
-					log.Printf("ARP Reply: %v is at %v\n",
+					logger.Printf("ARP Reply: %v is at %v\n",
 						net.IP(arp.SourceProtAddress),
 						net.HardwareAddr(arp.SourceHwAddress))
 					arpTable.Add(
@@ -136,18 +151,26 @@ func readPacketsWithDecodingLayerParser(pchan <-chan gopacket.Packet, wg *sync.W
 						net.IP(arp.SourceProtAddress))
 				}
 			case layers.LayerTypeIPv4:
-				log.Printf("Got an IPv4 packet from %s to %s\n",
+				logger.Printf("Got an IPv4 packet from %s to %s\n",
 					ip4.SrcIP.String(), ip4.DstIP.String())
 			case layers.LayerTypeIPv6:
-				log.Printf("Got an IPv6 packet from %s to %s\n",
+				logger.Printf("Got an IPv6 packet from %s to %s\n",
 					ip6.SrcIP.String(), ip6.DstIP.String())
 			case layers.LayerTypeTCP:
-				log.Println("Got a TCP packet")
+				logger.Println("Got a TCP packet")
 			case layers.LayerTypeUDP:
-				log.Println("Got a UDP packet")
+				logger.Println("Got a UDP packet")
 			case gopacket.LayerTypePayload:
-				// appLayer := packet.ApplicationLayer()
-				log.Printf("Payload: %d bytes\n", len(payload.Payload()))
+				appLayer := packet.ApplicationLayer()
+				logger.Printf("Payload: %d bytes\n", len(payload.Payload()))
+				for _, decoder := range appLayerDecoders {
+					identifier, provenance, err := decoder.DecodePayload(&appLayer)
+					if err == nil {
+						logger.Printf("Found a %s via %s\n", identifier, provenance)
+					} else {
+						logger.Println("Not a packet of this type")
+					}
+				}
 			}
 		}
 	}
