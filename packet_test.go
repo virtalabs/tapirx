@@ -8,6 +8,7 @@ import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
+	"github.com/virtalabs/tapirx/asset"
 	"github.com/virtalabs/tapirx/decoder"
 
 	// import layers to run its init function
@@ -38,7 +39,7 @@ func TestPacketParseSimple(t *testing.T) {
 	// Initialize objects later used by handlePacket
 	stats = *NewStats()
 	apiClient := NewAPIClient("", "", "", 1, false)
-	assetCSVWriter, err := NewAssetCSVWriter("")
+	assetCSVWriter, err := asset.NewAssetCSVWriter("")
 	if err != nil {
 		panic(err)
 	}

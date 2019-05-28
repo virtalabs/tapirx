@@ -1,4 +1,4 @@
-package main
+package asset
 
 import (
 	"encoding/csv"

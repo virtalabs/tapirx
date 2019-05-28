@@ -65,6 +65,7 @@ import (
 	// import layers to run its init function
 	_ "github.com/google/gopacket/layers"
 
+	"github.com/virtalabs/tapirx/asset"
 	"github.com/virtalabs/tapirx/decoder"
 )
 
@@ -175,7 +176,7 @@ func main() {
 	apiClient := NewAPIClient(*apiURL, *apiToken, *clientID, *apiLimit, apiClientEnabled)
 
 	// Configure CSV writer module
-	assetCSVWriter, err := NewAssetCSVWriter(*csvFilename)
+	assetCSVWriter, err := asset.NewAssetCSVWriter(*csvFilename)
 	if err != nil {
 		panic(err)
 	}

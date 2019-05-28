@@ -1,7 +1,7 @@
 /*
 Unit tests for Asset functions.
 */
-package main
+package asset
 
 import (
 	"io/ioutil"

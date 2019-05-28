@@ -11,6 +11,8 @@ import (
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/virtalabs/tapirx/asset"
 )
 
 // Here we create the package scoped variables mux, server and client so that
@@ -59,7 +61,7 @@ func TestAPISimple(t *testing.T) {
 	})
 
 	// Make a test request
-	result, err := apiClient.Upload(&Asset{
+	result, err := apiClient.Upload(&asset.Asset{
 		"10.0.0.1",
 		"0000:0000:0000:0000:0000:FFFF:0A00:0001",
 		"8000",
@@ -102,7 +104,7 @@ func TestAPIThrottling(t *testing.T) {
 	errors := make(chan error, 10)
 	for i := 0; i < cap(errors); i++ {
 		go func() {
-			_, err := apiClient.Upload(&Asset{})
+			_, err := apiClient.Upload(&asset.Asset{})
 			errors <- err
 		}()
 	}

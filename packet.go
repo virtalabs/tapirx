@@ -13,12 +13,13 @@ import (
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
+	"github.com/virtalabs/tapirx/asset"
 	"github.com/virtalabs/tapirx/decoder"
 )
 
 // decodeLayers extracts information from packets and stuffs any discovered
 // metadata into the provided Asset object.
-func decodeLayers(packet gopacket.Packet, asset *Asset) error {
+func decodeLayers(packet gopacket.Packet, asset *asset.Asset) error {
 	// Decode link, network, and transport layers to extract metadata about a
 	// packet that may represent an asset.
 	//
@@ -77,7 +78,7 @@ func decodeLayers(packet gopacket.Packet, asset *Asset) error {
 
 // parseApplicationLayer extracts information from a packet's application layer,
 // if one exists, and updates a provided Asset object.
-func parseApplicationLayer(packet gopacket.Packet, decoders []decoder.PayloadDecoder, asset *Asset) error {
+func parseApplicationLayer(packet gopacket.Packet, decoders []decoder.PayloadDecoder, asset *asset.Asset) error {
 	app := packet.ApplicationLayer()
 	if app == nil {
 		return fmt.Errorf("No application layer")
@@ -114,7 +115,7 @@ func handlePacket(
 	packet gopacket.Packet,
 	appLayerDecoders []decoder.PayloadDecoder,
 	apiClient *APIClient,
-	assetCSVWriter *AssetCSVWriter,
+	assetCSVWriter *asset.AssetCSVWriter,
 	waitGroup *sync.WaitGroup,
 ) {
 	if waitGroup != nil {
@@ -122,7 +123,7 @@ func handlePacket(
 	}
 
 	// Initialize an empty Asset to store information learned during dissection
-	asset := &Asset{}
+	asset := &asset.Asset{}
 	asset.LastSeen = time.Now()
 
 	// Decode packet and update statistics

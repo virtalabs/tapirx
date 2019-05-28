@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/virtalabs/tapirx/asset"
 )
 
 func TestStatsString(t *testing.T) {
@@ -19,7 +21,7 @@ func TestStatsString(t *testing.T) {
 	stats := NewStats()
 	stats.AddError(fmt.Errorf("No application layer"))
 	stats.AddError(fmt.Errorf("No identifier"))
-	stats.AddAsset(&Asset{
+	stats.AddAsset(&asset.Asset{
 		testIP,
 		"0000:0000:0000:0000:0000:FFFF:0A00:0001",
 		"8000",
@@ -77,7 +79,7 @@ func TestStatsSameID(t *testing.T) {
 	// Two different devices with the same identifier, but different network data.
 	stats := NewStats()
 	stats.AddPacket()
-	stats.AddAsset(&Asset{
+	stats.AddAsset(&asset.Asset{
 		"10.0.0.1",
 		"0000:0000:0000:0000:0000:FFFF:0A00:0001",
 		"8000",
@@ -89,7 +91,7 @@ func TestStatsSameID(t *testing.T) {
 		"ID0",
 	})
 	stats.AddPacket()
-	stats.AddAsset(&Asset{
+	stats.AddAsset(&asset.Asset{
 		"10.0.0.2",
 		"0000:0000:0000:0000:0000:FFFF:0A00:0002",
 		"8000",
@@ -127,7 +129,7 @@ func TestStatsDifferentID(t *testing.T) {
 	// Two different devices with different identifiers and network data
 	stats := NewStats()
 	stats.AddPacket()
-	stats.AddAsset(&Asset{
+	stats.AddAsset(&asset.Asset{
 		"10.0.0.1",
 		"0000:0000:0000:0000:0000:FFFF:0A00:0001",
 		"8000",
@@ -139,7 +141,7 @@ func TestStatsDifferentID(t *testing.T) {
 		"ID0",
 	})
 	stats.AddPacket()
-	stats.AddAsset(&Asset{
+	stats.AddAsset(&asset.Asset{
 		"10.0.0.2",
 		"0000:0000:0000:0000:0000:FFFF:0A00:0002",
 		"9000",
@@ -177,7 +179,7 @@ func TestStatsSameEverything(t *testing.T) {
 	// Two observations from the same device.
 	stats := NewStats()
 	stats.AddPacket()
-	stats.AddAsset(&Asset{
+	stats.AddAsset(&asset.Asset{
 		"10.0.0.1",
 		"0000:0000:0000:0000:0000:FFFF:0A00:0001",
 		"8000",
@@ -189,7 +191,7 @@ func TestStatsSameEverything(t *testing.T) {
 		"ID0",
 	})
 	stats.AddPacket()
-	stats.AddAsset(&Asset{
+	stats.AddAsset(&asset.Asset{
 		"10.0.0.1",
 		"0000:0000:0000:0000:0000:FFFF:0A00:0001",
 		"8000",
