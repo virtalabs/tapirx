@@ -49,7 +49,7 @@ func (decoder *DicomDecoder) DecodePayload(app *gopacket.ApplicationLayer) (stri
 	identifier, err := detectDicomAssociateIdentifier(appReader)
 
 	if err != nil {
-		log.Println("Not a DICOM packet")
+		log.Debug("Not a DICOM packet")
 		return "", "", fmt.Errorf("Not a DICOM packet")
 	}
 

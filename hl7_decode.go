@@ -111,7 +111,7 @@ func (decoder *HL7Decoder) DecodePayload(app *gopacket.ApplicationLayer) (string
 		// Ignore messages that don't start with "MSH"
 		return "", "", fmt.Errorf("Not an HL7 packet (no header)")
 	}
-	log.Println("Found HL7 header")
+	log.Debug("Found HL7 header")
 
 	// Print HL7 payload
 	//
@@ -125,16 +125,16 @@ func (decoder *HL7Decoder) DecodePayload(app *gopacket.ApplicationLayer) (string
 	// Print a raw Payload with escaped non-ASCII printing characters:
 	// log.Printf("%+q\n", string(app.Payload()))
 	payloadStr := string(payloadBytes)
-	log.Println("  HL7 PAYLOAD")
+	log.Debug("  HL7 PAYLOAD")
 	for _, segment := range strings.Split(payloadStr, "\r") {
-		log.Printf("    %+q\n", segment)
+		log.Debug("    %+q", segment)
 	}
 
 	// Parse HL7 payload
 	var message hl7.Message
 	message, _, err := hl7.ParseMessage(payloadBytes)
 	if err != nil {
-		log.Println("Error parsing HL7 payload")
+		log.Warn("Error parsing HL7 payload")
 		return "", "", err
 	}
 
@@ -161,14 +161,14 @@ func (decoder *HL7Decoder) DecodePayload(app *gopacket.ApplicationLayer) (string
 
 	for _, query := range decoder.hl7Queries {
 		if ident := query.hl7Query.GetString(message); ident != "" {
-			log.Printf("  Found HL7 identifier in %s segment", query.hl7Field)
+			log.Debugf("  Found HL7 identifier in %s segment", query.hl7Field)
 			identifier = ident
 			provenance = "HL7 " + query.hl7Field
 			break
 		}
 	}
 
-	log.Printf("  HL7 identifier: [%s] (provenance: %s)", identifier, provenance)
+	log.Debug("  HL7 identifier: [%s] (provenance: %s)", identifier, provenance)
 
 	return identifier, provenance, nil
 }

@@ -52,10 +52,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"os"
 	"runtime"
 	"sync"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
@@ -98,7 +99,7 @@ func main() {
 	// Default client ID is this computer's hostname
 	hostname, err := os.Hostname()
 	if err != nil {
-		log.Println("Failed to get hostname")
+		log.Warn("Failed to get hostname")
 		hostname = "localhost"
 	}
 
@@ -138,16 +139,16 @@ func main() {
 		registerInterruptHandler()
 	}
 
-	log.Printf("starting %s %s (%s)\n", ProductName, Version, runtime.GOOS)
-	defer log.Printf("exiting %s\n", ProductName)
+	log.Infof("Starting %s %s (%s)", ProductName, Version, runtime.GOOS)
+	defer log.Infof("Exiting %s", ProductName)
 
 	var handle *pcap.Handle
 	// Read from file or from interface (and bail if there's a failure)
 	if *fileName != "" {
-		log.Printf("read from file %v\n", *fileName)
+		log.Infof("Reading from file %v", *fileName)
 		handle, err = pcap.OpenOffline(*fileName)
 	} else {
-		log.Printf("listen on interface %v\n", *ifaceName)
+		log.Infof("Listening on interface %v", *ifaceName)
 		handle, err = pcap.OpenLive(*ifaceName, 1600, true, pcap.BlockForever)
 	}
 	if err != nil {
@@ -156,7 +157,7 @@ func main() {
 
 	// Set a Berkeley Packet Filter (BPF) filter if one is provided
 	if *bpfExpr != "" {
-		log.Printf("BPF filter expression: [%s]\n", *bpfExpr)
+		log.Infof("BPF filter expression: [%s]", *bpfExpr)
 		if err := handle.SetBPFFilter(*bpfExpr); err != nil {
 			panic(err)
 		}
@@ -197,7 +198,7 @@ func main() {
 	nPackets := 0
 	for packet := range packetSource.Packets() {
 		if *packetLimit > 0 && nPackets >= *packetLimit {
-			log.Printf("Packet limit %d reached; exiting.\n", *packetLimit)
+			log.Infof("Packet limit %d reached; exiting.", *packetLimit)
 			break
 		}
 		waitGroup.Add(1)
