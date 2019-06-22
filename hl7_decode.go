@@ -13,6 +13,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 
 	"strings"
 
@@ -110,7 +111,7 @@ func (decoder *HL7Decoder) DecodePayload(app *gopacket.ApplicationLayer) (string
 		// Ignore messages that don't start with "MSH"
 		return "", "", fmt.Errorf("Not an HL7 packet (no header)")
 	}
-	logger.Println("Found HL7 header")
+	log.Println("Found HL7 header")
 
 	// Print HL7 payload
 	//
@@ -122,18 +123,18 @@ func (decoder *HL7Decoder) DecodePayload(app *gopacket.ApplicationLayer) (string
 	// non-ASCII data in the string:
 	//
 	// Print a raw Payload with escaped non-ASCII printing characters:
-	// logger.Printf("%+q\n", string(app.Payload()))
+	// log.Printf("%+q\n", string(app.Payload()))
 	payloadStr := string(payloadBytes)
-	logger.Println("  HL7 PAYLOAD")
+	log.Println("  HL7 PAYLOAD")
 	for _, segment := range strings.Split(payloadStr, "\r") {
-		logger.Printf("    %+q\n", segment)
+		log.Printf("    %+q\n", segment)
 	}
 
 	// Parse HL7 payload
 	var message hl7.Message
 	message, _, err := hl7.ParseMessage(payloadBytes)
 	if err != nil {
-		logger.Println("Error parsing HL7 payload")
+		log.Println("Error parsing HL7 payload")
 		return "", "", err
 	}
 
@@ -160,14 +161,14 @@ func (decoder *HL7Decoder) DecodePayload(app *gopacket.ApplicationLayer) (string
 
 	for _, query := range decoder.hl7Queries {
 		if ident := query.hl7Query.GetString(message); ident != "" {
-			logger.Printf("  Found HL7 identifier in %s segment", query.hl7Field)
+			log.Printf("  Found HL7 identifier in %s segment", query.hl7Field)
 			identifier = ident
 			provenance = "HL7 " + query.hl7Field
 			break
 		}
 	}
 
-	logger.Printf("  HL7 identifier: [%s] (provenance: %s)", identifier, provenance)
+	log.Printf("  HL7 identifier: [%s] (provenance: %s)", identifier, provenance)
 
 	return identifier, provenance, nil
 }

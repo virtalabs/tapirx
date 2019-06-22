@@ -8,6 +8,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"sync"
 	"time"
 
@@ -32,24 +33,24 @@ func decodeLayers(packet gopacket.Packet, asset *Asset) error {
 	var tcp layers.TCP
 	parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet, &eth, &ip4, &ip6, &tcp)
 	decoded := []gopacket.LayerType{}
-	logger.Println("Decode packet")
+	log.Println("Decode packet")
 	parser.DecodeLayers(packet.Data(), &decoded)
 	for _, layerType := range decoded {
 		switch layerType {
 		case layers.LayerTypeEthernet:
 			asset.MACAddress = eth.SrcMAC.String()
 			stats.AddLayer("Ethernet")
-			logger.Println("  Eth", eth.SrcMAC, eth.DstMAC)
+			log.Println("  Eth", eth.SrcMAC, eth.DstMAC)
 		case layers.LayerTypeIPv4:
 			asset.IPv4Address = ip4.SrcIP.String()
 			stats.AddLayer("IPv4")
-			logger.Println("  IP4", ip4.SrcIP, ip4.DstIP)
+			log.Println("  IP4", ip4.SrcIP, ip4.DstIP)
 		case layers.LayerTypeIPv6:
 			asset.IPv6Address = ip6.SrcIP.String()
 			stats.AddLayer("IPv6")
-			logger.Println("  IP6", ip6.SrcIP, ip6.DstIP)
+			log.Println("  IP6", ip6.SrcIP, ip6.DstIP)
 		case layers.LayerTypeTCP:
-			logger.Printf("TCP %d->%d seq %d\n", tcp.SrcPort, tcp.DstPort, tcp.Seq)
+			log.Printf("TCP %d->%d seq %d\n", tcp.SrcPort, tcp.DstPort, tcp.Seq)
 			stats.AddLayer("TCP")
 			if tcp.SYN {
 				// If this packet has SYN+ACK, then the endpoint is accepting a
@@ -61,12 +62,12 @@ func decodeLayers(packet gopacket.Packet, asset *Asset) error {
 					asset.ListensOnPort = tcp.SrcPort.String()
 					asset.Provenance = "TCP handshake"
 					stats.AddLayer("TCP/handshake")
-					logger.Printf("  TCP server on %s\n", tcp.SrcPort)
+					log.Printf("  TCP server on %s\n", tcp.SrcPort)
 				} else {
 					asset.ConnectsToPort = tcp.DstPort.String()
 					asset.Provenance = "TCP handshake"
 					stats.AddLayer("TCP/handshake")
-					logger.Printf("  TCP client to :%s\n", tcp.DstPort)
+					log.Printf("  TCP client to :%s\n", tcp.DstPort)
 				}
 			}
 		}
@@ -145,7 +146,7 @@ func handlePacket(
 	if verbose {
 		fmt.Println(stringRepresentation)
 	}
-	logger.Println(stringRepresentation)
+	log.Println(stringRepresentation)
 
 	// Write to CSV file if requested by the user.
 	if assetCSVWriter != nil && assetCSVWriter.Enabled() {
@@ -158,7 +159,7 @@ func handlePacket(
 	// URL with a command line flag, the URL will be empty.
 	if apiClient.enabled {
 		if _, err := apiClient.Upload(asset); err != nil {
-			logger.Println("API Upload error:", err)
+			log.Println("API Upload error:", err)
 			stats.AddUploadError(err)
 		} else {
 			stats.AddUpload()

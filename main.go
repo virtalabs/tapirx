@@ -52,9 +52,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io"
-	"io/ioutil"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"runtime"
 	"sync"
@@ -67,18 +65,16 @@ import (
 )
 
 var (
-	logger  *log.Logger
 	verbose bool
 	stats   Stats
 )
 
 func setupLogging(debug bool) {
-	var traceDest io.Writer
-	traceDest = ioutil.Discard
 	if debug {
-		traceDest = os.Stderr
+		log.SetLevel(log.DebugLevel)
+	} else {
+		log.SetLevel(log.InfoLevel)
 	}
-	logger = log.New(traceDest, "INFO: ", log.LstdFlags)
 }
 
 func listInterfaces() {
@@ -102,7 +98,7 @@ func main() {
 	// Default client ID is this computer's hostname
 	hostname, err := os.Hostname()
 	if err != nil {
-		logger.Println("Failed to get hostname")
+		log.Println("Failed to get hostname")
 		hostname = "localhost"
 	}
 
@@ -142,16 +138,16 @@ func main() {
 		registerInterruptHandler()
 	}
 
-	logger.Printf("starting %s %s (%s)\n", ProductName, Version, runtime.GOOS)
-	defer logger.Printf("exiting %s\n", ProductName)
+	log.Printf("starting %s %s (%s)\n", ProductName, Version, runtime.GOOS)
+	defer log.Printf("exiting %s\n", ProductName)
 
 	var handle *pcap.Handle
 	// Read from file or from interface (and bail if there's a failure)
 	if *fileName != "" {
-		logger.Printf("read from file %v\n", *fileName)
+		log.Printf("read from file %v\n", *fileName)
 		handle, err = pcap.OpenOffline(*fileName)
 	} else {
-		logger.Printf("listen on interface %v\n", *ifaceName)
+		log.Printf("listen on interface %v\n", *ifaceName)
 		handle, err = pcap.OpenLive(*ifaceName, 1600, true, pcap.BlockForever)
 	}
 	if err != nil {
@@ -160,7 +156,7 @@ func main() {
 
 	// Set a Berkeley Packet Filter (BPF) filter if one is provided
 	if *bpfExpr != "" {
-		logger.Printf("BPF filter expression: [%s]\n", *bpfExpr)
+		log.Printf("BPF filter expression: [%s]\n", *bpfExpr)
 		if err := handle.SetBPFFilter(*bpfExpr); err != nil {
 			panic(err)
 		}
@@ -201,7 +197,7 @@ func main() {
 	nPackets := 0
 	for packet := range packetSource.Packets() {
 		if *packetLimit > 0 && nPackets >= *packetLimit {
-			logger.Printf("Packet limit %d reached; exiting.\n", *packetLimit)
+			log.Printf("Packet limit %d reached; exiting.\n", *packetLimit)
 			break
 		}
 		waitGroup.Add(1)

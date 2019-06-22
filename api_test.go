@@ -35,9 +35,6 @@ func setup() func() {
 	apiClient = NewAPIClient(apiURL, "", "", 1, true)
 	stats = *NewStats()
 
-	// The API client calls the logger global.  Initialize it.
-	setupLogging(false)
-
 	return func() {
 		server.Close()
 	}

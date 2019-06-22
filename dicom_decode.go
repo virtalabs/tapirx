@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"strings"
 
@@ -48,7 +49,7 @@ func (decoder *DicomDecoder) DecodePayload(app *gopacket.ApplicationLayer) (stri
 	identifier, err := detectDicomAssociateIdentifier(appReader)
 
 	if err != nil {
-		logger.Println("Not a DICOM packet")
+		log.Println("Not a DICOM packet")
 		return "", "", fmt.Errorf("Not a DICOM packet")
 	}
 
