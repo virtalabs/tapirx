@@ -67,6 +67,7 @@ func readPacketsFromHandle(handle *pcap.Handle, numWorkers int) {
 	packets := gopacket.NewPacketSource(handle, handle.LinkType())
 	pchan := packets.Packets()
 	var wg sync.WaitGroup
+	logger.Printf("Will use %d worker threads\n", numWorkers)
 	wg.Add(numWorkers)
 	for i := 0; i < numWorkers; i++ {
 		go readPacketsWithDecodingLayerParser(pchan, &wg)
@@ -90,10 +91,11 @@ func readPacketsWithDecodingLayerParser(pchan <-chan gopacket.Packet, wg *sync.W
 		&eth, &arp, &ip4, &ip6, &udp, &tcp, &payload)
 	decodedLayers := []gopacket.LayerType{}
 
-	// Make a set of decoders against which each incoming packet will be tested.
+	// Set of decoders against which each incoming packet will be tested
 	appLayerDecoders := []decoder.PayloadDecoder{
 		&decoder.HL7Decoder{Logger: &logger},
 		&decoder.DicomDecoder{Logger: &logger},
+		&decoder.GenericDecoder{Logger: &logger},
 	}
 	for _, decoder := range appLayerDecoders {
 		if err := decoder.Initialize(); err != nil {
@@ -121,25 +123,20 @@ func readPacketsWithDecodingLayerParser(pchan <-chan gopacket.Packet, wg *sync.W
 						net.HardwareAddr(arp.SourceHwAddress),
 						net.IP(arp.SourceProtAddress))
 				}
-			case layers.LayerTypeIPv4:
-				logger.Printf("Got an IPv4 packet from %s to %s\n",
-					ip4.SrcIP.String(), ip4.DstIP.String())
-			case layers.LayerTypeIPv6:
-				logger.Printf("Got an IPv6 packet from %s to %s\n",
-					ip6.SrcIP.String(), ip6.DstIP.String())
-			case layers.LayerTypeTCP:
-				logger.Println("Got a TCP packet")
-			case layers.LayerTypeUDP:
-				logger.Println("Got a UDP packet")
+			/*
+				case layers.LayerTypeIPv4:
+					logger.Printf("Got an IPv4 packet from %s to %s\n",
+						ip4.SrcIP.String(), ip4.DstIP.String())
+				case layers.LayerTypeIPv6:
+					logger.Printf("Got an IPv6 packet from %s to %s\n",
+						ip6.SrcIP.String(), ip6.DstIP.String())
+			*/
 			case gopacket.LayerTypePayload:
 				appLayer := packet.ApplicationLayer()
-				logger.Printf("Payload: %d bytes\n", len(payload.Payload()))
-				for _, decoder := range appLayerDecoders {
-					identifier, provenance, err := decoder.DecodePayload(&appLayer)
+				for _, d := range appLayerDecoders {
+					identifier, provenance, err := d.DecodePayload(&appLayer)
 					if err == nil {
 						logger.Printf("Found a %s via %s\n", identifier, provenance)
-					} else {
-						logger.Println("Not a packet of this type")
 					}
 				}
 			}
