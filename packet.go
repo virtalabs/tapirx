@@ -51,7 +51,7 @@ func decodeLayers(packet gopacket.Packet, asset *Asset) error {
 			stats.AddLayer("IPv6")
 			log.Debug("  IP6", ip6.SrcIP, ip6.DstIP)
 		case layers.LayerTypeTCP:
-			log.Debug("TCP %d->%d seq %d\n", tcp.SrcPort, tcp.DstPort, tcp.Seq)
+			log.Debugf("TCP %d->%d seq %d\n", tcp.SrcPort, tcp.DstPort, tcp.Seq)
 			stats.AddLayer("TCP")
 			if tcp.SYN {
 				// If this packet has SYN+ACK, then the endpoint is accepting a
@@ -97,6 +97,10 @@ func parseApplicationLayer(packet gopacket.Packet, decoders []PayloadDecoder, as
 			asset.Identifier = identifier
 			asset.Provenance = provenance
 			stats.AddLayer("Application/" + decoderName)
+			log.WithFields(log.Fields{
+				"identifier": identifier,
+				"provenance": provenance,
+			}).Info("Found asset")
 			break
 		}
 	}

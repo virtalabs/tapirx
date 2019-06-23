@@ -23,10 +23,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"net/http/httputil"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // An APIClient holds state and credentials related to uploading Asset
@@ -128,7 +129,7 @@ func (apiClient *APIClient) Upload(asset *Asset) (map[string]interface{}, error)
 	if err != nil {
 		return nil, fmt.Errorf("Error dumping response: %s", err)
 	}
-	log.Debug("Response:\n%s\n", responseDump)
+	log.Debugf("Response: %v", responseDump)
 
 	// Decode response JSON
 	var result map[string]interface{}

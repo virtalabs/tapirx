@@ -13,6 +13,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+
 	log "github.com/sirupsen/logrus"
 
 	"strings"
@@ -127,7 +128,7 @@ func (decoder *HL7Decoder) DecodePayload(app *gopacket.ApplicationLayer) (string
 	payloadStr := string(payloadBytes)
 	log.Debug("  HL7 PAYLOAD")
 	for _, segment := range strings.Split(payloadStr, "\r") {
-		log.Debug("    %+q", segment)
+		log.Debugf("    %+q", segment)
 	}
 
 	// Parse HL7 payload
@@ -168,7 +169,7 @@ func (decoder *HL7Decoder) DecodePayload(app *gopacket.ApplicationLayer) (string
 		}
 	}
 
-	log.Debug("  HL7 identifier: [%s] (provenance: %s)", identifier, provenance)
+	log.Debugf("  HL7 identifier: [%s] (provenance: %s)", identifier, provenance)
 
 	return identifier, provenance, nil
 }
