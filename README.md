@@ -274,6 +274,7 @@ open-source software:
 - [google/gopacket](https://github.com/google/gopacket/)
 - [deoxxa/hl7](https://github.com/deoxxa/hl7)
 - [grailbio/go-netdicom](https://github.com/grailbio/go-netdicom/)
+- [sirupsen/logrus](https://github.com/sirupsen/logrus/)
 
 To see a list of third-party dependencies:
 
