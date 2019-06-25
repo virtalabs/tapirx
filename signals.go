@@ -19,11 +19,7 @@ func registerInterruptHandler() {
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		<-sig // eat the signal
-		logStats()
-		os.Exit(0)
+		log.Debug("Caught interrupt; exiting.")
+		cleanupAndExit()
 	}()
-}
-
-func logStats() {
-	log.Info(stats.String())
 }

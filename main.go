@@ -112,6 +112,12 @@ func listInterfaces() {
 	}
 }
 
+func cleanupAndExit() {
+	log.Info("Statistics: ", stats.String())
+	log.Infof("Exiting %s", ProductName)
+	os.Exit(0)
+}
+
 func main() {
 	// Default client ID is this computer's hostname
 	hostname, err := os.Hostname()
@@ -131,7 +137,6 @@ func main() {
 	apiToken := flag.String("apitoken", "", "Upload API token")
 	apiLimit := flag.Int("apilimit", 10, "Limit of concurrent requests to API")
 	clientID := flag.String("clientid", hostname, "Client ID sent with API requests")
-	statsFlag := flag.Bool("stats", false, "Show statistics (as JSON data) before exiting")
 	version := flag.Bool("version", false, "Show version information and exit")
 	packetLimit := flag.Int("limit", 0, "Exit after N packets, 0 for unlimited")
 	sequential := flag.Bool("sequential", false, "Process packets sequentially")
@@ -152,13 +157,10 @@ func main() {
 		os.Exit(0)
 	}
 
-	if *statsFlag {
-		// Print stats before exit via Ctrl-C-esque interrupt
-		registerInterruptHandler()
-	}
+	registerInterruptHandler()
 
 	log.Infof("Starting %s %s (%s)", ProductName, Version, runtime.GOOS)
-	defer log.Infof("Exiting %s", ProductName)
+	defer cleanupAndExit()
 
 	var handle *pcap.Handle
 	// Read from file or from interface (and bail if there's a failure)
@@ -230,10 +232,5 @@ func main() {
 
 	// Block until we receive a notification from the workers.
 	waitGroup.Wait()
-
-	// Print stats
-	if *statsFlag {
-		logStats()
-	}
 
 }
