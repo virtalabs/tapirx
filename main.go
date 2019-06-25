@@ -98,7 +98,7 @@ func setupLogging(debug, verbose, slog bool) {
 func listInterfaces() {
 	ifaces, err := pcap.FindAllDevs()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	for _, iface := range ifaces {
 		if runtime.GOOS == "windows" {
@@ -160,7 +160,6 @@ func main() {
 	registerInterruptHandler()
 
 	log.Infof("Starting %s %s (%s)", ProductName, Version, runtime.GOOS)
-	defer cleanupAndExit()
 
 	var handle *pcap.Handle
 	// Read from file or from interface (and bail if there's a failure)
@@ -172,14 +171,14 @@ func main() {
 		handle, err = pcap.OpenLive(*ifaceName, 1600, true, pcap.BlockForever)
 	}
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	// Set a Berkeley Packet Filter (BPF) filter if one is provided
 	if *bpfExpr != "" {
 		log.Infof("BPF filter expression: [%s]", *bpfExpr)
 		if err := handle.SetBPFFilter(*bpfExpr); err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	}
 
@@ -192,7 +191,7 @@ func main() {
 	// Configure CSV writer module
 	assetCSVWriter, err := NewAssetCSVWriter(*csvFilename)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	if assetCSVWriter != nil {
 		defer assetCSVWriter.Close()
@@ -209,9 +208,11 @@ func main() {
 	}
 	for _, decoder := range appLayerDecoders {
 		if err := decoder.Initialize(); err != nil {
-			panic(err)
+			log.Panic(err)
 		}
 	}
+
+	defer cleanupAndExit()
 
 	// Handle a sequence of packets. If sequential is set, handle every packet in the main thread.
 	// Otherwise, spawn a goroutine for each packet.
