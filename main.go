@@ -220,7 +220,7 @@ func main() {
 
 	// Print stats
 	if *statsFlag {
-		fmt.Println(stats.String())
+		logStats()
 	}
 
 }
