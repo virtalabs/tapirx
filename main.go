@@ -58,6 +58,8 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	lSyslog "github.com/sirupsen/logrus/hooks/syslog"
+	"log/syslog"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
@@ -71,15 +73,25 @@ var (
 	stats   Stats
 )
 
-func setupLogging(debug bool) {
+func setupLogging(debug, verbose, slog bool) {
+	logger := log.StandardLogger()
+
 	log.SetFormatter(&log.TextFormatter{
 		FullTimestamp:   true,
 		TimestampFormat: time.RFC3339,
 	})
+
 	if debug {
-		log.SetLevel(log.DebugLevel)
+		logger.SetLevel(log.DebugLevel)
 	} else {
-		log.SetLevel(log.InfoLevel)
+		logger.SetLevel(log.InfoLevel)
+	}
+
+	if slog {
+		hook, err := lSyslog.NewSyslogHook("", "", syslog.LOG_INFO, "")
+		if err == nil {
+			logger.Hooks.Add(hook)
+		}
 	}
 }
 
@@ -111,6 +123,7 @@ func main() {
 	// parse command-line flags
 	flag.BoolVar(&verbose, "verbose", false, "Show verbose output")
 	debug := flag.Bool("debug", false, "Show debug output")
+	syslog := flag.Bool("syslog", false, "Log to local Syslog")
 	ifaceName := flag.String("iface", "eth0", "Interface to listen on")
 	bpfExpr := flag.String("bpf", "", "BPF filtering expression")
 	fileName := flag.String("pcap", "", "pcap file to read")
@@ -126,7 +139,7 @@ func main() {
 	listIfaces := flag.Bool("interfaces", false, "List all network interfaces and exit")
 	flag.Parse()
 
-	setupLogging(*debug)
+	setupLogging(*debug, verbose, *syslog)
 	stats = *NewStats()
 
 	if *version {

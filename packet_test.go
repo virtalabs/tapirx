@@ -29,8 +29,6 @@ func TestPacketParseSimple(t *testing.T) {
 	// Read a small pcap file and process the packets using handlePacket.  Use the
 	// statistics generated at the end to check for correctness.
 
-	setupLogging(false)
-
 	// Initialize objects later used by handlePacket
 	stats = *NewStats()
 	apiClient := NewAPIClient("", "", "", 1, false)
