@@ -55,6 +55,7 @@ import (
 	"os"
 	"runtime"
 	"sync"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -71,6 +72,10 @@ var (
 )
 
 func setupLogging(debug bool) {
+	log.SetFormatter(&log.TextFormatter{
+		FullTimestamp:   true,
+		TimestampFormat: time.RFC3339,
+	})
 	if debug {
 		log.SetLevel(log.DebugLevel)
 	} else {
