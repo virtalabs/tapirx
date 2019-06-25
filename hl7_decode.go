@@ -99,9 +99,10 @@ func (decoder *HL7Decoder) Initialize() error {
 // DecodePayload extracts device identifiers from an application-layer payload.
 func (decoder *HL7Decoder) DecodePayload(app *gopacket.ApplicationLayer) (string, string, error) {
 	payloadBytes := (*app).Payload()
-	if len(payloadBytes) < 3 {
+	if len(payloadBytes) < 4 {
 		return "", "", fmt.Errorf("Not an HL7 packet (too small)")
 	}
+
 	if bytes.Compare(mshHeader, payloadBytes[:3]) == 0 {
 		// Found header, do nothing
 	} else if bytes.Compare(mshHeader, payloadBytes[1:4]) == 0 {
