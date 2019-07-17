@@ -35,7 +35,7 @@ func TestHL7DecodeFile(t *testing.T) {
 			continue // Ignore packets without an application layer
 		}
 
-		_, _, err := testHl7Decoder.DecodePayload(&app)
+		_, err := testHl7Decoder.DecodePayload(&app)
 		if err != nil {
 			panic(err)
 		}
@@ -50,23 +50,23 @@ func appLayerFromString(s string) *gopacket.ApplicationLayer {
 
 func TestHL7DecodeTooShort(t *testing.T) {
 	appLayer := appLayerFromString(".")
-	ident, _, err := testHl7Decoder.DecodePayload(appLayer)
-	if ident != "" {
-		t.Errorf("Got identifier when none was expected")
-	}
+	decoded, err := testHl7Decoder.DecodePayload(appLayer)
 	if err == nil {
 		t.Errorf("Expected an error from too-short HL7 message")
+	}
+	if decoded != nil && decoded.Identifier != "" {
+		t.Errorf("Got identifier when none was expected")
 	}
 }
 
 func testHL7DecodeEmpty(s string, t *testing.T) {
 	appLayer := appLayerFromString(s)
-	ident, _, err := testHl7Decoder.DecodePayload(appLayer)
-	if ident != "" {
-		t.Errorf("Got identifier when none was expected")
-	}
+	decoded, err := testHl7Decoder.DecodePayload(appLayer)
 	if err != nil {
-		panic(err)
+		t.Errorf("Expected an error from empty HL7 message")
+	}
+	if decoded != nil && decoded.Identifier != "" {
+		t.Errorf("Got identifier when none was expected")
 	}
 }
 
@@ -75,11 +75,11 @@ func TestHL7DecodeEmpty2(t *testing.T) { testHL7DecodeEmpty("MSH|^~\\&|", t) }
 
 func identFromString(s string) string {
 	appLayer := appLayerFromString(s)
-	ident, _, err := testHl7Decoder.DecodePayload(appLayer)
+	decoded, err := testHl7Decoder.DecodePayload(appLayer)
 	if err != nil {
 		panic(err)
 	}
-	return ident
+	return decoded.Identifier
 }
 
 // Well-formed message header segment to be prepended to messages for testing

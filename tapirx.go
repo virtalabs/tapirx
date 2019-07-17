@@ -88,7 +88,6 @@ func readPacketsFromHandle(handle *pcap.Handle, numWorkers int) {
 
 	// channel that will emit packets as the packet parser finds them
 	pchan := gopacket.NewPacketSource(handle, handle.LinkType()).Packets()
-	defer close(pchan)
 
 	var wg sync.WaitGroup
 	for i := 0; i < numWorkers; i++ {

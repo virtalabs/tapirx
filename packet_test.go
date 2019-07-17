@@ -1,8 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
-	"log"
 	"testing"
 
 	"github.com/google/gopacket"
@@ -18,10 +16,9 @@ import (
 var testDecoders []decoder.PayloadDecoder
 
 func init() {
-	logger := log.New(ioutil.Discard, "", log.LstdFlags)
 	testDecoders = []decoder.PayloadDecoder{
-		&decoder.HL7Decoder{Logger: logger},
-		&decoder.DicomDecoder{Logger: logger},
+		&decoder.HL7Decoder{},
+		&decoder.DicomDecoder{},
 	}
 	for _, testDecoder := range testDecoders {
 		if err := testDecoder.Initialize(); err != nil {
