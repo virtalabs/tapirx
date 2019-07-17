@@ -25,11 +25,11 @@ var (
 	bpfExpr    = flag.String("bpf", "", "BPF filtering expression")
 
 	arpTable *ArpTable
-	logger   log.Logger
+	logger   *log.Logger
 )
 
 func main() {
-	logger = *log.New(os.Stderr, "INFO: ", log.LstdFlags)
+	logger = log.New(os.Stderr, "INFO: ", log.LstdFlags)
 	flag.Parse()
 
 	if *version {

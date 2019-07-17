@@ -70,7 +70,6 @@ import (
 )
 
 var (
-	logger  *log.Logger
 	verbose bool
 	stats   Stats
 )
@@ -84,24 +83,7 @@ func setupLogging(debug bool) {
 	logger = log.New(traceDest, "INFO: ", log.LstdFlags)
 }
 
-func listInterfaces() {
-	ifaces, err := pcap.FindAllDevs()
-	if err != nil {
-		panic(err)
-	}
-	for _, iface := range ifaces {
-		if runtime.GOOS == "windows" {
-			// On Windows, device names are ugly, like
-			// "\Device\NPF_{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}",
-			// so display a more descriptive name too.
-			fmt.Printf("%s\t(%s)\n", iface.Name, iface.Description)
-		} else {
-			fmt.Println(iface.Name)
-		}
-	}
-}
-
-func main() {
+func oldMain() {
 	// Default client ID is this computer's hostname
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -190,8 +172,8 @@ func main() {
 
 	// Make a set of decoders against which each incoming packet will be tested.
 	appLayerDecoders := []decoder.PayloadDecoder{
-		&decoder.HL7Decoder{Logger: logger},
-		&decoder.DicomDecoder{Logger: logger},
+		&decoder.HL7Decoder{},
+		&decoder.DicomDecoder{},
 	}
 	for _, decoder := range appLayerDecoders {
 		if err := decoder.Initialize(); err != nil {

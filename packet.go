@@ -91,11 +91,11 @@ func parseApplicationLayer(packet gopacket.Packet, decoders []decoder.PayloadDec
 	// stopping when a decoder succeeds or there are no decoders remaining.
 	for _, decoder := range decoders {
 		decoderName := decoder.Name()
-		identifier, provenance, err := decoder.DecodePayload(&app)
+		decodeResult, err := decoder.DecodePayload(&app)
 		if err == nil {
 			// Success, we're done
-			asset.Identifier = identifier
-			asset.Provenance = provenance
+			asset.Identifier = decodeResult.Identifier
+			asset.Provenance = decodeResult.Provenance
 			stats.AddLayer("Application/" + decoderName)
 			break
 		}
