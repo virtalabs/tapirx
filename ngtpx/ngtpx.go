@@ -4,16 +4,13 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net"
 	"os"
 	"runtime"
 	"sync"
 	"time"
 
 	"github.com/google/gopacket"
-	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
-	"github.com/virtalabs/tapirx/decoder"
 )
 
 var (
@@ -23,6 +20,9 @@ var (
 		"How often (in seconds) to emit assets to an API endpoint")
 	numWorkers = flag.Int("workers", runtime.NumCPU(),
 		"Number of concurrent processes decoding packets")
+	listIfaces = flag.Bool("interfaces", false, "List all network interfaces and exit")
+	version    = flag.Bool("version", false, "Show version information and exit")
+	bpfExpr    = flag.String("bpf", "", "BPF filtering expression")
 
 	arpTable *ArpTable
 	logger   log.Logger
@@ -32,13 +32,28 @@ func main() {
 	logger = *log.New(os.Stderr, "INFO: ", log.LstdFlags)
 	flag.Parse()
 
-	// Check that the user provided either a pcap file or an interface on whih to listen (not both)
-	var handle *pcap.Handle
-	var err error
+	if *version {
+		fmt.Printf("%s %s\n", ProductName, Version)
+		os.Exit(0)
+	}
+
+	if *listIfaces {
+		listInterfaces()
+		os.Exit(0)
+	}
+
 	if *iface != "" && *fileName != "" {
 		fmt.Fprintln(os.Stderr, "Specify -iface or -pcap, but not both")
 		os.Exit(1)
-	} else if *iface != "" {
+	} else if *iface == "" && *fileName == "" {
+		fmt.Fprintln(os.Stderr, "Specify -iface or -pcap")
+		os.Exit(1)
+	}
+
+	// Configure a packet source: either a "live" interface or a pcap file
+	var handle *pcap.Handle
+	var err error
+	if *iface != "" {
 		if handle, err = pcap.OpenLive(*iface, 1600, true, pcap.BlockForever); err != nil {
 			log.Fatalln(err)
 		}
@@ -46,11 +61,15 @@ func main() {
 		if handle, err = pcap.OpenOffline(*fileName); err != nil {
 			log.Fatalln(err)
 		}
-	} else {
-		fmt.Fprintln(os.Stderr, "Specify -iface or -pcap")
-		os.Exit(1)
 	}
 
+	// Optionally apply a BPF expression (a "filter") to the packet source
+	if err := handle.SetBPFFilter(*bpfExpr); err != nil {
+		log.Fatalln(err)
+	}
+
+	// Set up an ARP table to map between IP addresses and MAC addresses throughout the course of
+	// the capture
 	arpTable = NewArpTable()
 	defer arpTable.Print()
 	go func() {
@@ -61,85 +80,20 @@ func main() {
 	}()
 
 	readPacketsFromHandle(handle, *numWorkers)
+	fmt.Println("Exiting.")
 }
 
 func readPacketsFromHandle(handle *pcap.Handle, numWorkers int) {
-	packets := gopacket.NewPacketSource(handle, handle.LinkType())
-	pchan := packets.Packets()
-	var wg sync.WaitGroup
 	logger.Printf("Will use %d worker threads\n", numWorkers)
-	wg.Add(numWorkers)
+
+	// channel that will emit packets as the packet parser finds them
+	pchan := gopacket.NewPacketSource(handle, handle.LinkType()).Packets()
+	defer close(pchan)
+
+	var wg sync.WaitGroup
 	for i := 0; i < numWorkers; i++ {
+		wg.Add(1)
 		go readPacketsWithDecodingLayerParser(pchan, &wg)
 	}
 	wg.Wait()
-}
-
-func readPacketsWithDecodingLayerParser(pchan <-chan gopacket.Packet, wg *sync.WaitGroup) {
-	var (
-		eth     layers.Ethernet
-		arp     layers.ARP
-		ip4     layers.IPv4
-		ip6     layers.IPv6
-		udp     layers.UDP
-		tcp     layers.TCP
-		payload gopacket.Payload
-	)
-
-	parser := gopacket.NewDecodingLayerParser(
-		layers.LayerTypeEthernet, // base layer type
-		&eth, &arp, &ip4, &ip6, &udp, &tcp, &payload)
-	decodedLayers := []gopacket.LayerType{}
-
-	// Set of decoders against which each incoming packet will be tested
-	appLayerDecoders := []decoder.PayloadDecoder{
-		&decoder.HL7Decoder{Logger: &logger},
-		&decoder.DicomDecoder{Logger: &logger},
-		&decoder.GenericDecoder{Logger: &logger},
-	}
-	for _, decoder := range appLayerDecoders {
-		if err := decoder.Initialize(); err != nil {
-			panic(err)
-		}
-	}
-
-	defer wg.Done()
-
-	for packet := range pchan {
-		err := parser.DecodeLayers(packet.Data(), &decodedLayers)
-		if err != nil {
-			// decoding stack doesn't know how to decode this packet
-			continue
-		}
-
-		for _, layerType := range decodedLayers {
-			switch layerType {
-			case layers.LayerTypeARP:
-				if arp.Operation == layers.ARPReply {
-					logger.Printf("ARP Reply: %v is at %v\n",
-						net.IP(arp.SourceProtAddress),
-						net.HardwareAddr(arp.SourceHwAddress))
-					arpTable.Add(
-						net.HardwareAddr(arp.SourceHwAddress),
-						net.IP(arp.SourceProtAddress))
-				}
-			/*
-				case layers.LayerTypeIPv4:
-					logger.Printf("Got an IPv4 packet from %s to %s\n",
-						ip4.SrcIP.String(), ip4.DstIP.String())
-				case layers.LayerTypeIPv6:
-					logger.Printf("Got an IPv6 packet from %s to %s\n",
-						ip6.SrcIP.String(), ip6.DstIP.String())
-			*/
-			case gopacket.LayerTypePayload:
-				appLayer := packet.ApplicationLayer()
-				for _, d := range appLayerDecoders {
-					identifier, provenance, err := d.DecodePayload(&appLayer)
-					if err == nil {
-						logger.Printf("Found a %s via %s\n", identifier, provenance)
-					}
-				}
-			}
-		}
-	}
 }

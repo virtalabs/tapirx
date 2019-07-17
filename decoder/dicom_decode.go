@@ -11,8 +11,8 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"log"
 	"strings"
+	"time"
 
 	"github.com/google/gopacket"
 	// import layers to run its init function
@@ -27,7 +27,6 @@ const typeAAssociateRq = 0x01
 // DicomDecoder receives application-layer payloads and, when possible, extracts
 // identifying information from DICOM messages therein.
 type DicomDecoder struct {
-	Logger *log.Logger
 }
 
 // Name returns the name of the decoder.
@@ -45,20 +44,21 @@ func (d DicomDecoder) Initialize() error {
 }
 
 // DecodePayload extracts device identifiers from an application-layer payload.
-func (d *DicomDecoder) DecodePayload(app *gopacket.ApplicationLayer) (string, string, error) {
+func (d *DicomDecoder) DecodePayload(app *gopacket.ApplicationLayer) (*DecodingResult, error) {
 	var appReader io.Reader = bytes.NewReader((*app).Payload())
 
 	identifier, err := detectDicomAssociateIdentifier(appReader)
-
 	if err != nil {
-		d.Logger.Println("Not a DICOM packet")
-		return "", "", fmt.Errorf("Not a DICOM packet")
+		return nil, fmt.Errorf("Not a DICOM packet")
 	}
 
 	// Hard code provenance (suboptimal but OK)
-	provenance := "DICOM"
-
-	return identifier, provenance, nil
+	result := &DecodingResult{
+		Identifier: identifier,
+		Provenance: "DICOM",
+		Timestamp:  time.Now(),
+	}
+	return result, nil
 }
 
 // Accept an io.Reader, detects whether it is a DICOM associate

@@ -6,21 +6,29 @@ Decoder definitions.
 package decoder
 
 import (
-	"log"
+	"fmt"
+	"time"
 
 	"github.com/google/gopacket"
 )
+
+// DecodingResult encodes a fact of the following kind: we saw an endpoint, possibly with a
+// particular identifier, in a particular kind of network traffic at a certain moment.
+type DecodingResult struct {
+	Identifier string
+	Provenance string
+	Timestamp  time.Time
+}
 
 // PayloadDecoder defines a struct that can accept a packet payload (application layer).
 type PayloadDecoder interface {
 	Name() string
 	Initialize() error
-	DecodePayload(app *gopacket.ApplicationLayer) (string, string, error)
+	DecodePayload(app *gopacket.ApplicationLayer) (*DecodingResult, error)
 	String() string
 }
 
 type GenericDecoder struct {
-	Logger *log.Logger
 }
 
 func (d *GenericDecoder) Name() string {
@@ -35,8 +43,8 @@ func (d *GenericDecoder) String() string {
 	return d.Name()
 }
 
-func (d *GenericDecoder) DecodePayload(app *gopacket.ApplicationLayer) (string, string, error) {
+func (d *GenericDecoder) DecodePayload(app *gopacket.ApplicationLayer) (*DecodingResult, error) {
 	payloadBytes := (*app).Payload()
-	d.Logger.Printf("GenericDecoder: payload of %d bytes\n", len(payloadBytes))
-	return "a thing", "another thing", nil
+	fmt.Printf("GenericDecoder got payload of %d bytes\n", len(payloadBytes))
+	return &DecodingResult{}, nil
 }

@@ -5,8 +5,6 @@ Unit tests for dicom decoder
 package decoder
 
 import (
-	"io/ioutil"
-	"log"
 	"path/filepath"
 	"testing"
 
@@ -20,8 +18,7 @@ import (
 var dicomDecoder *DicomDecoder
 
 func init() {
-	logger := log.New(ioutil.Discard, "", log.LstdFlags)
-	dicomDecoder = &DicomDecoder{Logger: logger}
+	dicomDecoder = &DicomDecoder{}
 	if err := dicomDecoder.Initialize(); err != nil {
 		panic("Failed to initialize DICOM decoder")
 	}

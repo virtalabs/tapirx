@@ -14,6 +14,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"time"
 
 	"strings"
 
@@ -98,11 +99,12 @@ func (decoder *HL7Decoder) Initialize() error {
 	return nil
 }
 
-// DecodePayload extracts device identifiers from an application-layer payload.
-func (decoder *HL7Decoder) DecodePayload(app *gopacket.ApplicationLayer) (string, string, error) {
+// DecodePayload extracts device identifiers from an application-layer payload. Returns a nil
+// *DecodingResult if there was nothing meaningful to extract.
+func (decoder *HL7Decoder) DecodePayload(app *gopacket.ApplicationLayer) (*DecodingResult, error) {
 	payloadBytes := (*app).Payload()
 	if len(payloadBytes) < 3 {
-		return "", "", fmt.Errorf("Not an HL7 packet (too small)")
+		return nil, fmt.Errorf("Not an HL7 packet (too small)")
 	}
 	if bytes.Compare(mshHeader, payloadBytes[:3]) == 0 {
 		// Found header, do nothing
@@ -110,33 +112,14 @@ func (decoder *HL7Decoder) DecodePayload(app *gopacket.ApplicationLayer) (string
 		payloadBytes = payloadBytes[1:]
 	} else {
 		// Ignore messages that don't start with "MSH"
-		return "", "", fmt.Errorf("Not an HL7 packet (no header)")
-	}
-	decoder.Logger.Println("Found HL7 header")
-
-	// Print HL7 payload
-	//
-	// "%+q", from the docs: If we are unfamiliar or confused by strange values
-	// in the string, we can use the "plus" flag to the %q verb. This flag
-	// causes the output to escape not only non-printable sequences, but also
-	// any non-ASCII bytes, all while interpreting UTF-8. The result is that it
-	// exposes the Unicode values of properly formatted UTF-8 that represents
-	// non-ASCII data in the string:
-	//
-	// Print a raw Payload with escaped non-ASCII printing characters:
-	// decoder.Logger.Printf("%+q\n", string(app.Payload()))
-	payloadStr := string(payloadBytes)
-	decoder.Logger.Println("  HL7 PAYLOAD")
-	for _, segment := range strings.Split(payloadStr, "\r") {
-		decoder.Logger.Printf("    %+q\n", segment)
+		return nil, fmt.Errorf("Not an HL7 packet (no header)")
 	}
 
 	// Parse HL7 payload
 	var message hl7.Message
 	message, _, err := hl7.ParseMessage(payloadBytes)
 	if err != nil {
-		decoder.Logger.Println("Error parsing HL7 payload")
-		return "", "", err
+		return nil, err
 	}
 
 	// Parse identifiers
@@ -162,14 +145,16 @@ func (decoder *HL7Decoder) DecodePayload(app *gopacket.ApplicationLayer) (string
 
 	for _, query := range decoder.hl7Queries {
 		if ident := query.hl7Query.GetString(message); ident != "" {
-			decoder.Logger.Printf("  Found HL7 identifier in %s segment", query.hl7Field)
-			identifier = ident
+			identifier = strings.Trim(ident, " \t")
 			provenance = "HL7 " + query.hl7Field
 			break
 		}
 	}
 
-	decoder.Logger.Printf("  HL7 identifier: [%s] (provenance: %s)", identifier, provenance)
-
-	return identifier, provenance, nil
+	result := &DecodingResult{
+		Identifier: identifier,
+		Provenance: provenance,
+		Timestamp:  time.Now(),
+	}
+	return result, nil
 }
