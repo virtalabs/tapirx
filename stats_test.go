@@ -22,15 +22,15 @@ func TestStatsString(t *testing.T) {
 	stats.AddError(fmt.Errorf("No application layer"))
 	stats.AddError(fmt.Errorf("No identifier"))
 	stats.AddAsset(&asset.Asset{
-		testIP,
-		"0000:0000:0000:0000:0000:FFFF:0A00:0001",
-		"8000",
-		"2575",
-		testMAC,
-		"Hospira Plum A+",
-		"HL7",
-		time.Time{},
-		"ID0",
+		IPv4Address:    testIP,
+		IPv6Address:    "0000:0000:0000:0000:0000:FFFF:0A00:0001",
+		ListensOnPort:  "8000",
+		ConnectsToPort: "2575",
+		MACAddress:     testMAC,
+		Identifier:     "Hospira Plum A+",
+		Provenance:     "HL7",
+		LastSeen:       time.Time{},
+		ClientID:       "ID0",
 	})
 	stats.AddUpload()
 	stats.AddUploadError(fmt.Errorf("Error making request"))
@@ -80,27 +80,27 @@ func TestStatsSameID(t *testing.T) {
 	stats := NewStats()
 	stats.AddPacket()
 	stats.AddAsset(&asset.Asset{
-		"10.0.0.1",
-		"0000:0000:0000:0000:0000:FFFF:0A00:0001",
-		"8000",
-		"2575",
-		"11:22:33:44:55:66",
-		"Hospira Plum A+",
-		"HL7",
-		time.Time{},
-		"ID0",
+		IPv4Address:    "10.0.0.1",
+		IPv6Address:    "0000:0000:0000:0000:0000:FFFF:0A00:0001",
+		ListensOnPort:  "8000",
+		ConnectsToPort: "2575",
+		MACAddress:     "11:22:33:44:55:66",
+		Identifier:     "Hospira Plum A+",
+		Provenance:     "HL7",
+		LastSeen:       time.Time{},
+		ClientID:       "ID0",
 	})
 	stats.AddPacket()
 	stats.AddAsset(&asset.Asset{
-		"10.0.0.2",
-		"0000:0000:0000:0000:0000:FFFF:0A00:0002",
-		"8000",
-		"2575",
-		"11:22:33:44:55:67",
-		"Hospira Plum A+",
-		"HL7",
-		time.Time{},
-		"ID0",
+		IPv4Address:    "10.0.0.2",
+		IPv6Address:    "0000:0000:0000:0000:0000:FFFF:0A00:0002",
+		ListensOnPort:  "8000",
+		ConnectsToPort: "2575",
+		MACAddress:     "11:22:33:44:55:67",
+		Identifier:     "Hospira Plum A+",
+		Provenance:     "HL7",
+		LastSeen:       time.Time{},
+		ClientID:       "ID0",
 	})
 	if stats.TotalPacketCount != 2 {
 		t.Errorf("Expected 2 total packets")
@@ -130,27 +130,27 @@ func TestStatsDifferentID(t *testing.T) {
 	stats := NewStats()
 	stats.AddPacket()
 	stats.AddAsset(&asset.Asset{
-		"10.0.0.1",
-		"0000:0000:0000:0000:0000:FFFF:0A00:0001",
-		"8000",
-		"2575",
-		"11:22:33:44:55:66",
-		"Hospira Plum A+",
-		"HL7",
-		time.Time{},
-		"ID0",
+		IPv4Address:    "10.0.0.1",
+		IPv6Address:    "0000:0000:0000:0000:0000:FFFF:0A00:0001",
+		ListensOnPort:  "8000",
+		ConnectsToPort: "2575",
+		MACAddress:     "11:22:33:44:55:66",
+		Identifier:     "Hospira Plum A+",
+		Provenance:     "HL7",
+		LastSeen:       time.Time{},
+		ClientID:       "ID0",
 	})
 	stats.AddPacket()
 	stats.AddAsset(&asset.Asset{
-		"10.0.0.2",
-		"0000:0000:0000:0000:0000:FFFF:0A00:0002",
-		"9000",
-		"2575",
-		"11:22:33:44:55:67",
-		"Alaris 8000",
-		"HL7",
-		time.Time{},
-		"ID0",
+		IPv4Address:    "10.0.0.2",
+		IPv6Address:    "0000:0000:0000:0000:0000:FFFF:0A00:0002",
+		ListensOnPort:  "9000",
+		ConnectsToPort: "2575",
+		MACAddress:     "11:22:33:44:55:67",
+		Identifier:     "Alaris 8000",
+		Provenance:     "HL7",
+		LastSeen:       time.Time{},
+		ClientID:       "ID0",
 	})
 	if stats.TotalPacketCount != 2 {
 		t.Errorf("Expected 2 total packets")
@@ -180,27 +180,27 @@ func TestStatsSameEverything(t *testing.T) {
 	stats := NewStats()
 	stats.AddPacket()
 	stats.AddAsset(&asset.Asset{
-		"10.0.0.1",
-		"0000:0000:0000:0000:0000:FFFF:0A00:0001",
-		"8000",
-		"2575",
-		"11:22:33:44:55:66",
-		"Hospira Plum A+",
-		"HL7",
-		time.Time{},
-		"ID0",
+		IPv4Address:    "10.0.0.1",
+		IPv6Address:    "0000:0000:0000:0000:0000:FFFF:0A00:0001",
+		ListensOnPort:  "8000",
+		ConnectsToPort: "2575",
+		MACAddress:     "11:22:33:44:55:66",
+		Identifier:     "Hospira Plum A+",
+		Provenance:     "HL7",
+		LastSeen:       time.Time{},
+		ClientID:       "ID0",
 	})
 	stats.AddPacket()
 	stats.AddAsset(&asset.Asset{
-		"10.0.0.1",
-		"0000:0000:0000:0000:0000:FFFF:0A00:0001",
-		"8000",
-		"2575",
-		"11:22:33:44:55:66",
-		"Hospira Plum A+",
-		"HL7",
-		time.Time{},
-		"ID0",
+		IPv4Address:    "10.0.0.1",
+		IPv6Address:    "0000:0000:0000:0000:0000:FFFF:0A00:0001",
+		ListensOnPort:  "8000",
+		ConnectsToPort: "2575",
+		MACAddress:     "11:22:33:44:55:66",
+		Identifier:     "Hospira Plum A+",
+		Provenance:     "HL7",
+		LastSeen:       time.Time{},
+		ClientID:       "ID0",
 	})
 	if stats.TotalPacketCount != 2 {
 		t.Errorf("Expected 2 total packets")

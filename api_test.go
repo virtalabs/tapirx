@@ -62,15 +62,15 @@ func TestAPISimple(t *testing.T) {
 
 	// Make a test request
 	result, err := apiClient.Upload(&asset.Asset{
-		"10.0.0.1",
-		"0000:0000:0000:0000:0000:FFFF:0A00:0001",
-		"8000",
-		"2575",
-		"11:22:33:44:55:66",
-		"Hospira Plum A+",
-		"HL7",
-		time.Time{},
-		"ID0",
+		IPv4Address:    "10.0.0.1",
+		IPv6Address:    "0000:0000:0000:0000:0000:FFFF:0A00:0001",
+		ListensOnPort:  "8000",
+		ConnectsToPort: "2575",
+		MACAddress:     "11:22:33:44:55:66",
+		Identifier:     "Hospira Plum A+",
+		Provenance:     "HL7",
+		LastSeen:       time.Time{},
+		ClientID:       "ID0",
 	})
 
 	// Check output and errors

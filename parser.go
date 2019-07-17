@@ -11,7 +11,7 @@ import (
 
 // readPacketsWithDecodingLayerParser reads packets from channel pchan until it is closed or there
 // is an error.
-func readPacketsWithDecodingLayerParser(pchan <-chan gopacket.Packet, wg *sync.WaitGroup) {
+func readPacketsWithDecodingLayerParser(pchan chan gopacket.Packet, wg *sync.WaitGroup) {
 	var (
 		eth     layers.Ethernet
 		arp     layers.ARP
