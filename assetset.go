@@ -7,11 +7,13 @@ import (
 	"github.com/virtalabs/tapirx/asset"
 )
 
+// AssetSet refers to a set of Assets.
 type AssetSet struct {
 	sync.Mutex
 	assets []asset.Asset
 }
 
+// NewAssetSet creates a new empty AssetSet.
 func NewAssetSet(C <-chan asset.Asset) *AssetSet {
 	set := &AssetSet{}
 	set.assets = make([]asset.Asset, 0, 100)
