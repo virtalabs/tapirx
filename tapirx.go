@@ -105,27 +105,26 @@ func main() {
 	var err error
 	if *iface != "" {
 		if handle, err = pcap.OpenLive(*iface, 1600, true, pcap.BlockForever); err != nil {
-			log.Fatalln(err)
+			logger.Fatalln(err)
 		}
 	} else if *fileName != "" {
 		if handle, err = pcap.OpenOffline(*fileName); err != nil {
-			log.Fatalln(err)
+			logger.Fatalln(err)
 		}
 	}
 
 	// Optionally apply a BPF expression (a "filter") to the packet source
 	if err := handle.SetBPFFilter(*bpfExpr); err != nil {
-		log.Fatalln(err)
+		logger.Fatalln(err)
 	}
 
 	// Set up an ARP table to map between IP addresses and MAC addresses throughout the course of
 	// the capture
 	arpTable = NewArpTable()
-	defer arpTable.Print()
 	go func() {
 		timer := time.NewTicker(5 * time.Second)
 		for range timer.C {
-			arpTable.Print()
+			logger.Println(arpTable.String())
 		}
 	}()
 
@@ -133,7 +132,7 @@ func main() {
 	go func() {
 		timer := time.NewTicker(5 * time.Second)
 		for range timer.C {
-			assets.Print()
+			logger.Println(assets.String())
 		}
 	}()
 
@@ -143,9 +142,8 @@ func main() {
 		if cleanedUp {
 			return
 		}
-		fmt.Println("Exiting cleanly.")
+		logger.Println("Exiting cleanly.")
 		close(done)
-		close(assets.C)
 		cleanedUp = true
 	}
 

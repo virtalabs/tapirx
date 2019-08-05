@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
+	"strings"
 	"sync"
 )
 
@@ -20,13 +21,15 @@ func (a *ArpTable) Add(hwAddr net.HardwareAddr, ip net.IP) {
 }
 
 // Print prints the ARP table.
-func (a *ArpTable) Print() {
-	fmt.Printf("ARP table (%d):\n", len(a.arpTable))
+func (a *ArpTable) String() string {
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("ARP table (%d): ", len(a.arpTable)))
 	for mac, ip := range a.arpTable {
-		fmt.Printf(" - %v == %v\n",
+		sb.WriteString(fmt.Sprintf(" - %v == %v; ",
 			net.HardwareAddr([]byte(mac)),
-			net.IP(ip))
+			net.IP(ip)))
 	}
+	return sb.String()
 }
 
 // NewArpTable initialized an ARP table.

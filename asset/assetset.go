@@ -29,11 +29,11 @@ func (a *AssetSet) Remove(asset *Asset) {
 }
 
 // Print renders an AssetSet to standard output.
-func (a *AssetSet) Print() {
+func (a *AssetSet) String() string {
 	a.Lock()
 	defer a.Unlock()
 
-	fmt.Println(a.assets)
+	return fmt.Sprint(a.assets)
 }
 
 // ConsumeAssets consumes Assets from a channel and safely adds them to the AssetSet.
