@@ -64,15 +64,15 @@ import (
 )
 
 var (
-	fileName     = flag.String("pcap", "", "pcap file to read")
-	iface        = flag.String("iface", "", "interface to listen on")
-	emitInterval = flag.Int("emit-interval", 10,
-		"How often (in seconds) to emit assets to an API endpoint")
+	fileName   = flag.String("pcap", "", "pcap file to read")
+	listIfaces = flag.Bool("interfaces", false, "List all network interfaces and exit")
+	iface      = flag.String("iface", "", "Interface to listen on")
+	bpfExpr    = flag.String("bpf", "", "BPF filtering expression")
 	numWorkers = flag.Int("workers", runtime.NumCPU(),
 		"Number of concurrent processes decoding packets")
-	listIfaces = flag.Bool("interfaces", false, "List all network interfaces and exit")
-	version    = flag.Bool("version", false, "Show version information and exit")
-	bpfExpr    = flag.String("bpf", "", "BPF filtering expression")
+	emitInterval = flag.Int("emit-interval", 10,
+		"How often (in seconds) to emit assets to an API endpoint")
+	version = flag.Bool("version", false, "Show version information and exit")
 
 	arpTable *ArpTable
 	logger   *log.Logger
