@@ -88,7 +88,7 @@ func main() {
 	}
 
 	if *listIfaces {
-		listInterfaces()
+		ListInterfaces()
 		os.Exit(0)
 	}
 
