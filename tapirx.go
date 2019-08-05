@@ -135,6 +135,7 @@ func main() {
 		close(done)
 		cleanedUp = true
 	}
+	defer cleanup()
 	registerCleanupHandler(cleanup)
 
 	// Pipeline:
@@ -142,6 +143,8 @@ func main() {
 	go assets.ConsumeAssets()                                              // sink
 	pchan := gopacket.NewPacketSource(handle, handle.LinkType()).Packets() // source
 
+	// Create a set of packet workers that will read from pchan until pchan runs out of packets or
+	// the done channel is closed (by, e.g., a signal handler).
 	logger.Printf("Will use %d worker threads\n", *numWorkers)
 	var wg sync.WaitGroup
 	for i := 0; i < *numWorkers; i++ {
@@ -149,5 +152,4 @@ func main() {
 		go readPacketsWithDecodingLayerParser(done, pchan, assets.C, arpTable, &wg)
 	}
 	wg.Wait()
-	cleanup()
 }
