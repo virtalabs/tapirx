@@ -16,6 +16,7 @@ func readPacketsWithDecodingLayerParser(
 	done chan struct{},
 	pchan chan gopacket.Packet,
 	achan chan asset.Asset,
+	arpTable *ArpTable,
 	wg *sync.WaitGroup) {
 
 	var (

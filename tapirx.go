@@ -75,8 +75,7 @@ var (
 		"How often (in seconds) to emit assets to an API endpoint")
 	version = flag.Bool("version", false, "Show version information and exit")
 
-	arpTable *ArpTable
-	logger   *log.Logger
+	logger *log.Logger
 )
 
 func main() {
@@ -121,7 +120,7 @@ func main() {
 
 	// Set up an ARP table to map between IP addresses and MAC addresses throughout the course of
 	// the capture. Expire entries older than 4 hours (default on most Cisco devices) every minute.
-	arpTable = NewArpTable(4*time.Hour, 1*time.Minute)
+	arpTable := NewArpTable(4*time.Hour, 1*time.Minute)
 
 	// Storehouse for assets
 	assets := asset.NewAssetSet()
@@ -146,7 +145,7 @@ func main() {
 	var wg sync.WaitGroup
 	for i := 0; i < *numWorkers; i++ {
 		wg.Add(1)
-		go readPacketsWithDecodingLayerParser(done, pchan, assets.C, &wg)
+		go readPacketsWithDecodingLayerParser(done, pchan, assets.C, arpTable, &wg)
 	}
 	wg.Wait()
 	cleanup()
