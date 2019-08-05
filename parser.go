@@ -57,7 +57,6 @@ func readPacketsWithDecodingLayerParser(
 					arpTable.Add(
 						net.HardwareAddr(arp.SourceHwAddress),
 						net.IP(arp.SourceProtAddress))
-					logger.Printf("Making new Asset")
 
 					// Emit an asset.
 					achan <- asset.Asset{
@@ -67,9 +66,9 @@ func readPacketsWithDecodingLayerParser(
 			case gopacket.LayerTypePayload:
 				appLayer := packet.ApplicationLayer()
 				for _, d := range appLayerDecoders {
-					decodingResult, err := d.DecodePayload(&appLayer)
+					_, err := d.DecodePayload(&appLayer)
 					if err == nil {
-						logger.Printf("decodingResult: %v\n", decodingResult)
+						// TODO: make an asset
 					}
 				}
 			}
