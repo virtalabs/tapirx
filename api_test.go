@@ -35,10 +35,6 @@ func setup() func() {
 
 	apiURL := server.URL + "/api" // Base URL automatically chosen by httptest
 	apiClient = NewAPIClient(apiURL, "", "", 1, true)
-	stats = *NewStats()
-
-	// The API client calls the logger global.  Initialize it.
-	setupLogging(false)
 
 	return func() {
 		server.Close()

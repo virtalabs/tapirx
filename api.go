@@ -23,8 +23,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
-	"net/http/httputil"
 	"time"
 
 	"github.com/virtalabs/tapirx/asset"
@@ -70,7 +70,7 @@ func (apiClient *APIClient) Upload(asset *asset.Asset) (map[string]interface{}, 
 	// Handle API throttling.  If the number of outstanding requests exceeds the
 	// limit, return an error.
 	if len(apiClient.semaphore) == cap(apiClient.semaphore) {
-		logger.Printf("Ignoring API request due to throttling")
+		log.Printf("Ignoring API request due to throttling")
 		return nil, fmt.Errorf("Ignoring API request due to throttling")
 	}
 	apiClient.semaphore <- true
@@ -101,13 +101,6 @@ func (apiClient *APIClient) Upload(asset *asset.Asset) (map[string]interface{}, 
 		request.Header.Set("Authorization", tokHdr)
 	}
 
-	requestDump, err := httputil.DumpRequestOut(request, true)
-	if err != nil {
-		return nil, fmt.Errorf("Error dumping request: %s", err)
-	}
-
-	logger.Printf("DEBUG request:\n%s\n", string(requestDump))
-
 	// Send request
 	response, err := httpClient.Do(request)
 	if err != nil {
@@ -118,25 +111,17 @@ func (apiClient *APIClient) Upload(asset *asset.Asset) (map[string]interface{}, 
 	}
 
 	// Check status code of response
-	logger.Println("DEBUG response:", response.Status)
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return nil, fmt.Errorf("Error API non-2xx response: %s", response.Status)
 	}
 
-	// Dump response for debugging
 	defer response.Body.Close()
-	responseDump, err := httputil.DumpResponse(response, true)
-	if err != nil {
-		return nil, fmt.Errorf("Error dumping response: %s", err)
-	}
-	logger.Printf("DEBUG response:\n%s\n", responseDump)
 
 	// Decode response JSON
 	var result map[string]interface{}
 	if err := json.NewDecoder(response.Body).Decode(&result); err != nil {
 		return nil, fmt.Errorf("Error decoding response:: %s", err)
 	}
-	logger.Println("DEBUG response JSON:", result)
 
 	// Success
 	return result, nil
