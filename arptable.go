@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"strings"
 	"sync"
@@ -19,8 +20,9 @@ type ArpTableEntry struct {
 // ArpTable represents an ARP table, i.e., a mapping of hardware MAC addresses to IP addresses.
 type ArpTable struct {
 	sync.Mutex
-	arpTable map[string]ArpTableEntry
-	MaxAge   time.Duration
+	arpTable       map[string]ArpTableEntry
+	MaxAge         time.Duration
+	ExpireInterval time.Duration
 }
 
 // Add adds or overwrites an ARP table entry. If the hardware address hwAddr already exists in the
@@ -30,6 +32,11 @@ func (a *ArpTable) Add(hwAddr net.HardwareAddr, ip net.IP) {
 	a.Lock()
 	a.arpTable[string(hwAddr)] = ArpTableEntry{hwAddr, ip, time.Now()}
 	a.Unlock()
+}
+
+// Length returns the number of entries (the number of distinct hardware addresses) in the ARP table
+func (a *ArpTable) Length() int {
+	return len(a.arpTable)
 }
 
 // Print prints the ARP table.
@@ -46,17 +53,20 @@ func (a *ArpTable) String() string {
 }
 
 // NewArpTable initializes an ARP table. If maxAge is not zero, ARP table entries older than maxAge
-// will be removed every minute.
-func NewArpTable(maxAge time.Duration) *ArpTable {
+// will be removed every expireInterval.
+func NewArpTable(maxAge time.Duration, expireInterval time.Duration) *ArpTable {
 	at := &ArpTable{}
 	at.arpTable = make(map[string]ArpTableEntry)
 	at.MaxAge = maxAge
+	at.ExpireInterval = expireInterval
 
 	if at.MaxAge > 0 {
 		go func() {
-			timer := time.NewTicker(time.Minute)
+			timer := time.NewTicker(expireInterval)
 			for range timer.C {
-				at.RemoveExpired()
+				if n := at.RemoveExpired(); n > 0 {
+					log.Printf("Expired %d ARP table entries.\n", n)
+				}
 			}
 		}()
 	}

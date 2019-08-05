@@ -120,8 +120,8 @@ func main() {
 	}
 
 	// Set up an ARP table to map between IP addresses and MAC addresses throughout the course of
-	// the capture. Expire entries every 4 hours (default on most Cisco devices).
-	arpTable = NewArpTable(4 * time.Hour)
+	// the capture. Expire entries older than 4 hours (default on most Cisco devices) every minute.
+	arpTable = NewArpTable(4*time.Hour, 1*time.Minute)
 
 	// Storehouse for assets
 	assets := asset.NewAssetSet()
