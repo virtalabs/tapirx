@@ -6,7 +6,6 @@ Signal handling.
 package main
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -19,7 +18,6 @@ func registerInterruptHandler() {
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		<-sig // eat the signal
-		fmt.Println(stats.String())
 		os.Exit(0)
 	}()
 }

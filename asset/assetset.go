@@ -9,6 +9,7 @@ import (
 type AssetSet struct {
 	sync.Mutex
 	assets map[string]*Asset
+	C      chan Asset
 }
 
 // Add adds an asset to the AssetSet.
@@ -27,16 +28,26 @@ func (a *AssetSet) Remove(asset *Asset) {
 	delete(a.assets, asset.MACAddress)
 }
 
+// Print renders an AssetSet to standard output.
+func (a *AssetSet) Print() {
+	a.Lock()
+	defer a.Unlock()
+
+	fmt.Println(a.assets)
+}
+
+// ConsumeAssets consumes Assets from a channel and safely adds them to the AssetSet.
+func (a *AssetSet) ConsumeAssets() {
+	for asset := range a.C {
+		fmt.Printf("AssetSet worker got asset %v\n", asset)
+		a.Add(&asset)
+	}
+}
+
 // NewAssetSet creates a new empty AssetSet.
-func NewAssetSet(C <-chan Asset) *AssetSet {
+func NewAssetSet() *AssetSet {
 	set := &AssetSet{}
 	set.assets = make(map[string]*Asset)
-	go func() {
-		// read Assets from the input channel forever.
-		for asset := range C {
-			fmt.Printf("Got an asset: %v\n", asset)
-			set.Add(&asset)
-		}
-	}()
+	set.C = make(chan Asset)
 	return set
 }

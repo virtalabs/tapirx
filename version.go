@@ -7,4 +7,4 @@ const ProductName = "Tapirx"
 //
 // You can overwrite the version number during development with
 //     go install -ldflags "-X main.Version=..."
-var Version = "1.0.1"
+const Version = "1.0.1"

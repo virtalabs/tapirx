@@ -1,17 +1,24 @@
 package main
 
 import (
+	"fmt"
 	"net"
 	"sync"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
+	"github.com/virtalabs/tapirx/asset"
 	"github.com/virtalabs/tapirx/decoder"
 )
 
 // readPacketsWithDecodingLayerParser reads packets from channel pchan until it is closed or there
 // is an error.
-func readPacketsWithDecodingLayerParser(pchan chan gopacket.Packet, wg *sync.WaitGroup) {
+func readPacketsWithDecodingLayerParser(
+	done chan struct{},
+	pchan chan gopacket.Packet,
+	achan chan asset.Asset,
+	wg *sync.WaitGroup) {
+
 	var (
 		eth     layers.Ethernet
 		arp     layers.ARP
@@ -31,7 +38,7 @@ func readPacketsWithDecodingLayerParser(pchan chan gopacket.Packet, wg *sync.Wai
 	appLayerDecoders := []decoder.PayloadDecoder{
 		&decoder.HL7Decoder{},
 		&decoder.DicomDecoder{},
-		&decoder.GenericDecoder{},
+		// &decoder.GenericDecoder{},
 	}
 	for _, decoder := range appLayerDecoders {
 		if err := decoder.Initialize(); err != nil {
@@ -39,14 +46,8 @@ func readPacketsWithDecodingLayerParser(pchan chan gopacket.Packet, wg *sync.Wai
 		}
 	}
 
-	for packet := range pchan {
-		err := parser.DecodeLayers(packet.Data(), &decodedLayers)
-		if err != nil {
-			// decoding stack doesn't know how to decode this packet, but that's OK
-			continue
-		}
-
-		for _, layerType := range decodedLayers {
+	processLayers := func(packet gopacket.Packet, decoded []gopacket.LayerType) {
+		for _, layerType := range decoded {
 			switch layerType {
 			case layers.LayerTypeARP:
 				if arp.Operation == layers.ARPReply {
@@ -56,19 +57,43 @@ func readPacketsWithDecodingLayerParser(pchan chan gopacket.Packet, wg *sync.Wai
 					arpTable.Add(
 						net.HardwareAddr(arp.SourceHwAddress),
 						net.IP(arp.SourceProtAddress))
+					logger.Printf("Making new Asset")
+
+					// Emit an asset.
+					achan <- asset.Asset{
+						MACAddress: net.HardwareAddr(arp.SourceHwAddress).String(),
+					}
 				}
 			case gopacket.LayerTypePayload:
 				appLayer := packet.ApplicationLayer()
 				for _, d := range appLayerDecoders {
 					decodingResult, err := d.DecodePayload(&appLayer)
 					if err == nil {
-						logger.Printf("Found a %s via %s\n",
-							decodingResult.Identifier, decodingResult.Provenance)
+						logger.Printf("decodingResult: %v\n", decodingResult)
 					}
 				}
 			}
 		}
+
 	}
+
+	for {
+		select {
+		case <-done:
+			break
+		case p, ok := <-pchan:
+			if !ok {
+				break
+			}
+			if err := parser.DecodeLayers(p.Data(), &decodedLayers); err != nil {
+				// decoding stack doesn't know how to decode this packet, but that's OK
+				continue
+			}
+			processLayers(p, decodedLayers)
+		}
+	}
+
+	fmt.Println("End of packets")
 
 	wg.Done()
 }

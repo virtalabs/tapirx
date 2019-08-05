@@ -1,3 +1,52 @@
+// Copyright 2018-2019 Virta Laboratories, Inc.  All rights reserved.
+/*
+Tapirx passively discovers and identifies medical devices from raw network
+traffic.
+
+Source code: https://github.com/virtalabs/tapirx/
+
+Inputs
+
+This tool may be run against prerecorded traffic captures in individual pcap
+files, or it may be run indefinitely on a live network interface connected to a
+feed of network traffic (e.g., a SPAN port).
+
+ # Load packets from a pcap file
+ tapirx -pcap foo.pcap [...]
+
+ # List available network interfaces and exit
+ tapirx -interfaces
+
+ # Read packets from the eth0 interface
+ tapirx -iface eth0 [...]
+
+You can use standard BPF expressions to filter the traffic you capture live or
+extract from pcap files.
+
+ # capture HL7 traffic
+ tapirx -bpf "port 2575" [...]
+
+ # capture DICOM traffic on port 11112
+ tapirx -bpf "port 11112" [...]
+
+Outputs
+
+This tool can feed the results of its discovery and identification to other
+systems via REST API endpoints. You may want to feed this information to a
+system of record that tracks your networked assets.
+
+ tapirx -apiurl https://my-system-of-record.example.com/api/devices [...]
+
+To run against a BlueFlow server (https://virtalabs.com/blueflow), the command
+line will look like
+
+ tapirx -apiurl https://my-blueflow-instance/api/assets/upsert -apitoken <my API token> [...]
+
+Runtime Help
+
+Run this tool with the "-help" option to see runtime options.
+ tapirx -help
+*/
 package main
 
 import (
@@ -11,6 +60,7 @@ import (
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
+	"github.com/virtalabs/tapirx/asset"
 )
 
 var (
@@ -79,20 +129,37 @@ func main() {
 		}
 	}()
 
-	readPacketsFromHandle(handle, *numWorkers)
-	fmt.Println("Exiting.")
-}
+	assets := asset.NewAssetSet()
+	go func() {
+		timer := time.NewTicker(5 * time.Second)
+		for range timer.C {
+			assets.Print()
+		}
+	}()
 
-func readPacketsFromHandle(handle *pcap.Handle, numWorkers int) {
-	logger.Printf("Will use %d worker threads\n", numWorkers)
+	done := make(chan struct{})
+	cleanedUp := false
+	cleanup := func() {
+		if cleanedUp {
+			return
+		}
+		fmt.Println("Exiting cleanly.")
+		close(done)
+		close(assets.C)
+		cleanedUp = true
+	}
 
-	// channel that will emit packets as the packet parser finds them
-	pchan := gopacket.NewPacketSource(handle, handle.LinkType()).Packets()
+	// Pipeline:
+	// 1 source -> (N decoder workers) -> 1 sink
+	go assets.ConsumeAssets()                                              // sink
+	pchan := gopacket.NewPacketSource(handle, handle.LinkType()).Packets() // source
 
+	logger.Printf("Will use %d worker threads\n", *numWorkers)
 	var wg sync.WaitGroup
-	for i := 0; i < numWorkers; i++ {
+	for i := 0; i < *numWorkers; i++ {
 		wg.Add(1)
-		go readPacketsWithDecodingLayerParser(pchan, &wg)
+		go readPacketsWithDecodingLayerParser(done, pchan, assets.C, &wg)
 	}
 	wg.Wait()
+	cleanup()
 }
