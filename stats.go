@@ -67,7 +67,6 @@ func (s *Stats) AddError(err error) {
 // AddAsset reports that a valid packet with identifying information has been
 // seen.
 func (s *Stats) AddAsset(asset *asset.Asset) {
-	logger.Println("AddAsset()")
 	s.Lock()
 	defer s.Unlock()
 	if asset.IPv4Address != "" {
