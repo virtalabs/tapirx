@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net"
 	"sync"
 
@@ -74,26 +73,25 @@ func readPacketsWithDecodingLayerParser(
 				}
 			}
 		}
-
 	}
 
+packetLoop:
 	for {
 		select {
 		case <-done:
 			break
 		case p, ok := <-pchan:
 			if !ok {
-				break
+				break packetLoop
 			}
 			if err := parser.DecodeLayers(p.Data(), &decodedLayers); err != nil {
-				// decoding stack doesn't know how to decode this packet, but that's OK
+				// decoding stack doesn't know how to decode this packet, so ignore it
 				continue
 			}
 			processLayers(p, decodedLayers)
 		}
 	}
-
-	fmt.Println("End of packets")
+	logger.Println("packet worker exiting")
 
 	wg.Done()
 }
