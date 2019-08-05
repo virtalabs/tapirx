@@ -135,6 +135,7 @@ func main() {
 		close(done)
 		cleanedUp = true
 	}
+	registerCleanupHandler(cleanup)
 
 	// Pipeline:
 	// 1 source -> (N decoder workers) -> 1 sink

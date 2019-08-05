@@ -1,3 +1,8 @@
+// Copyright 2019 Virta Laboratories, Inc.  All rights reserved.
+/*
+Packet parsing.
+*/
+
 package main
 
 import (
@@ -76,10 +81,13 @@ func readPacketsWithDecodingLayerParser(
 	}
 
 packetLoop:
+	/* Main loop: when a Packet is available from the packet source channel, attempt to make sense
+	   of it by passing it to processLayers(). Shut down cleanly if a signal arrives from the done
+	   channel. */
 	for {
 		select {
 		case <-done:
-			break
+			break packetLoop
 		case p, ok := <-pchan:
 			if !ok {
 				break packetLoop
