@@ -6,7 +6,7 @@ import (
 )
 
 func TestArpTableAdd(t *testing.T) {
-	arpTable := NewArpTable()
+	arpTable := NewArpTable(0)
 
 	arpTable.Add(net.HardwareAddr{1, 2, 3, 4, 5, 6}, net.IP{10, 1, 2, 3})
 	if len(arpTable.arpTable) != 1 {
@@ -19,7 +19,7 @@ func TestArpTableAdd(t *testing.T) {
 }
 
 func BenchmarkArpTableAdd(b *testing.B) {
-	arpTable := NewArpTable()
+	arpTable := NewArpTable(0)
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			arpTable.Add(net.HardwareAddr{1, 2, 3, 4, 5, 6}, net.IP{10, 1, 2, 3})

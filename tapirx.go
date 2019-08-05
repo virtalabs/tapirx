@@ -70,6 +70,7 @@ var (
 	bpfExpr    = flag.String("bpf", "", "BPF filtering expression")
 	numWorkers = flag.Int("workers", runtime.NumCPU(),
 		"Number of concurrent processes decoding packets")
+	arpMaxAge    = flag.Duration("arp-max-age", 4*time.Hour, "Maximum age of ARP table entries")
 	emitInterval = flag.Int("emit-interval", 10,
 		"How often (in seconds) to emit assets to an API endpoint")
 	version = flag.Bool("version", false, "Show version information and exit")
@@ -119,22 +120,11 @@ func main() {
 	}
 
 	// Set up an ARP table to map between IP addresses and MAC addresses throughout the course of
-	// the capture
-	arpTable = NewArpTable()
-	go func() {
-		timer := time.NewTicker(5 * time.Second)
-		for range timer.C {
-			logger.Println(arpTable.String())
-		}
-	}()
+	// the capture. Expire entries every 4 hours (default on most Cisco devices).
+	arpTable = NewArpTable(4 * time.Hour)
 
+	// Storehouse for assets
 	assets := asset.NewAssetSet()
-	go func() {
-		timer := time.NewTicker(5 * time.Second)
-		for range timer.C {
-			logger.Println(assets.String())
-		}
-	}()
 
 	done := make(chan struct{})
 	cleanedUp := false
