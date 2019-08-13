@@ -122,7 +122,7 @@ func main() {
 	// the capture. Expire entries older than 4 hours (default on most Cisco devices) every minute.
 	arpTable := NewArpTable(4*time.Hour, 1*time.Minute)
 
-	// Storehouse for assets
+	// Storehouse for asset information that will be emitted or uploaded.
 	assets := asset.NewAssetSet()
 
 	done := make(chan struct{})

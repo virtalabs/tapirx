@@ -1,3 +1,4 @@
+// Copyright 2019 Virta Laboratories, Inc.  All rights reserved.
 /*
 Submit information about discovered devices to other services via REST API
 endpoints.

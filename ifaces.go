@@ -1,3 +1,8 @@
+// Copyright 2019 Virta Laboratories, Inc.  All rights reserved.
+/*
+Network interface handling.
+*/
+
 package main
 
 import (

@@ -1,3 +1,8 @@
+// Copyright 2019 Virta Laboratories, Inc.  All rights reserved.
+/*
+ARP table data structures and functions.
+*/
+
 package main
 
 import (
