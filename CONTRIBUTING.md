@@ -82,3 +82,8 @@ good to implement packet reassembly so we can parse payloads that span multiple
 frames/packets.  [Notes on gopacket TCP
 reassembly](https://godoc.org/github.com/google/gopacket/tcpassembly) will come
 in handy.
+
+Tapirx does _not_ include a library of "device profiles" so it can attempt to
+determine a device's identity without observing any identifiers. In other
+words, there is no _inference_ going on. YMMV with commercial vendors that
+claim to ship with large collections of device profiles.
