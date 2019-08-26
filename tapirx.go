@@ -122,9 +122,6 @@ func main() {
 	// the capture. Expire entries older than 4 hours (default on most Cisco devices) every minute.
 	arpTable := NewArpTable(4*time.Hour, 1*time.Minute)
 
-	// Storehouse for asset information that will be emitted or uploaded.
-	assets := asset.NewAssetSet()
-
 	done := make(chan struct{})
 	cleanedUp := false
 	cleanup := func() {
@@ -138,9 +135,21 @@ func main() {
 	defer cleanup()
 	registerCleanupHandler(cleanup)
 
-	// Pipeline:
-	// 1 source -> (N decoder workers) -> 1 sink
-	go assets.ConsumeAssets()                                              // sink
+	// The packet-to-Asset-to-server pipeline works as follows:
+	//
+	//                / (Decoder worker) \
+	//   Source -->  {  (Decoder worker)  } --> Sink
+	//                \ (...)            /
+	//
+	// The interesting work of making sense of packet payloads happens in the decoder workers, but
+	// because a single decoder worker might not be able to keep up with incoming packets from a
+	// fast source (e.g., a live Ethernet interface), we spawn numWorkers of them.
+	//
+	// The stages are set up in reverse order so that each pipeline stage is ready to receive before
+	// anything tries to send to it.
+	assets := asset.NewAssetSet()
+	go assets.ConsumeAssets()
+
 	pchan := gopacket.NewPacketSource(handle, handle.LinkType()).Packets() // source
 
 	// Create a set of packet workers that will read from pchan until pchan runs out of packets or
