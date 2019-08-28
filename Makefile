@@ -1,24 +1,24 @@
-GOFILES = $(wildcard *.go)
-GOPATH  = $(shell go env GOPATH)
-GITREV ?= $(shell git describe --always --dirty)
-LDFLAGS = -ldflags "-X tapirx.Version=$(GITREV)"
-EXENAME = tapirx
+PACKAGE  = github.com/virtalabs/tapirx
+GITREV  ?= $(shell git describe --always --dirty)
+LDFLAGS  = -ldflags="-X '$(PACKAGE).Version=$(GITREV)'"
+COMMANDS = $(addprefix $(PACKAGE)/, $(sort $(wildcard cmd/*)))
 export GO111MODULE = on
 
-.PHONY: all deps clean install test
+.PHONY: all build clean deps install test
 
-all: install
+all: build install
+
+build:
+	go build $(LDFLAGS) ./...
 
 deps:
 	go mod tidy
 
-install: ${GOPATH}/bin/$(EXENAME)
+install:
+	go install $(LDFLAGS) $(COMMANDS)
 
 test:
 	go test -v ./...
-
-${GOPATH}/bin/$(EXENAME): $(GOFILES)
-	go install $(LDFLAGS) ./...
 
 clean:
 	go clean
