@@ -4,15 +4,13 @@ Unit tests for API upload client.
 Based on "Testing API Clients in Go"
 https://www.markphelps.me/testing-api-clients-in-go/
 */
-package main
+package tapirx
 
 import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
-
-	"github.com/virtalabs/tapirx/asset"
 )
 
 // Here we create the package scoped variables mux, server and client so that
@@ -57,7 +55,7 @@ func TestAPISimple(t *testing.T) {
 	})
 
 	// Make a test request
-	result, err := apiClient.Upload(&asset.Asset{
+	result, err := apiClient.Upload(&Asset{
 		IPv4Address:    "10.0.0.1",
 		IPv6Address:    "0000:0000:0000:0000:0000:FFFF:0A00:0001",
 		ListensOnPort:  "8000",
@@ -100,7 +98,7 @@ func TestAPIThrottling(t *testing.T) {
 	errors := make(chan error, 10)
 	for i := 0; i < cap(errors); i++ {
 		go func() {
-			_, err := apiClient.Upload(&asset.Asset{})
+			_, err := apiClient.Upload(&Asset{})
 			errors <- err
 		}()
 	}

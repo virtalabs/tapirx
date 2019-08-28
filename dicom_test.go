@@ -2,7 +2,7 @@
 Unit tests for dicom decoder
 */
 
-package decoder
+package tapirx
 
 import (
 	"fmt"
@@ -26,7 +26,7 @@ func init() {
 }
 
 func TestDicomFile(t *testing.T) {
-	testfiles, err := filepath.Glob("../testdata/dicom*.pcap")
+	testfiles, err := filepath.Glob("testdata/dicom*.pcap")
 	if err != nil {
 		panic(err)
 	}

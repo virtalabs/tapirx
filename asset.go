@@ -1,4 +1,4 @@
-package asset
+package tapirx
 
 import (
 	"encoding/csv"

@@ -3,24 +3,23 @@
 Packet parsing.
 */
 
-package main
+package tapirx
 
 import (
+	"log"
 	"net"
 	"sync"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
-	"github.com/virtalabs/tapirx/asset"
-	"github.com/virtalabs/tapirx/decoder"
 )
 
 // readPacketsWithDecodingLayerParser reads packets from channel pchan until it is closed or there
 // is an error.
-func readPacketsWithDecodingLayerParser(
+func ReadPacketsWithDecodingLayerParser(
 	done chan struct{},
 	pchan chan gopacket.Packet,
-	achan chan asset.Asset,
+	achan chan Asset,
 	arpTable *ArpTable,
 	wg *sync.WaitGroup) {
 
@@ -40,10 +39,10 @@ func readPacketsWithDecodingLayerParser(
 	decodedLayers := []gopacket.LayerType{}
 
 	// Set of decoders against which each incoming packet will be tested. First one wins.
-	appLayerDecoders := []decoder.PayloadDecoder{
-		&decoder.HL7Decoder{},
-		&decoder.DicomDecoder{},
-		// &decoder.GenericDecoder{},
+	appLayerDecoders := []PayloadDecoder{
+		&HL7Decoder{},
+		&DicomDecoder{},
+		// &GenericDecoder{},
 	}
 	for _, decoder := range appLayerDecoders {
 		if err := decoder.Initialize(); err != nil {
@@ -56,7 +55,7 @@ func readPacketsWithDecodingLayerParser(
 			switch layerType {
 			case layers.LayerTypeARP:
 				if arp.Operation == layers.ARPReply {
-					logger.Printf("ARP Reply: %v is at %v\n",
+					log.Printf("ARP Reply: %v is at %v\n",
 						net.IP(arp.SourceProtAddress),
 						net.HardwareAddr(arp.SourceHwAddress))
 					arpTable.Add(
@@ -64,7 +63,7 @@ func readPacketsWithDecodingLayerParser(
 						net.IP(arp.SourceProtAddress))
 
 					// Emit an asset.
-					achan <- asset.Asset{
+					achan <- Asset{
 						MACAddress: net.HardwareAddr(arp.SourceHwAddress).String(),
 					}
 				}
@@ -99,7 +98,7 @@ packetLoop:
 			processLayers(p, decodedLayers)
 		}
 	}
-	logger.Println("packet worker exiting")
+	log.Println("packet worker exiting")
 
 	wg.Done()
 }

@@ -4,7 +4,7 @@ dicom_decode: Inspect an application layer, detect if it is a DICOM
 			  packet, try to extract identifier.
 */
 
-package decoder
+package tapirx
 
 import (
 	"bytes"

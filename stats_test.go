@@ -1,7 +1,7 @@
 /*
 Unit tests for stats functions.
 */
-package main
+package tapirx
 
 import (
 	"encoding/json"
@@ -9,8 +9,6 @@ import (
 	"fmt"
 	"testing"
 	"time"
-
-	"github.com/virtalabs/tapirx/asset"
 )
 
 func TestStatsString(t *testing.T) {
@@ -21,7 +19,7 @@ func TestStatsString(t *testing.T) {
 	stats := NewStats()
 	stats.AddError(fmt.Errorf("No application layer"))
 	stats.AddError(fmt.Errorf("No identifier"))
-	stats.AddAsset(&asset.Asset{
+	stats.AddAsset(&Asset{
 		IPv4Address:    testIP,
 		IPv6Address:    "0000:0000:0000:0000:0000:FFFF:0A00:0001",
 		ListensOnPort:  "8000",
@@ -79,7 +77,7 @@ func TestStatsSameID(t *testing.T) {
 	// Two different devices with the same identifier, but different network data.
 	stats := NewStats()
 	stats.AddPacket()
-	stats.AddAsset(&asset.Asset{
+	stats.AddAsset(&Asset{
 		IPv4Address:    "10.0.0.1",
 		IPv6Address:    "0000:0000:0000:0000:0000:FFFF:0A00:0001",
 		ListensOnPort:  "8000",
@@ -91,7 +89,7 @@ func TestStatsSameID(t *testing.T) {
 		ClientID:       "ID0",
 	})
 	stats.AddPacket()
-	stats.AddAsset(&asset.Asset{
+	stats.AddAsset(&Asset{
 		IPv4Address:    "10.0.0.2",
 		IPv6Address:    "0000:0000:0000:0000:0000:FFFF:0A00:0002",
 		ListensOnPort:  "8000",
@@ -129,7 +127,7 @@ func TestStatsDifferentID(t *testing.T) {
 	// Two different devices with different identifiers and network data
 	stats := NewStats()
 	stats.AddPacket()
-	stats.AddAsset(&asset.Asset{
+	stats.AddAsset(&Asset{
 		IPv4Address:    "10.0.0.1",
 		IPv6Address:    "0000:0000:0000:0000:0000:FFFF:0A00:0001",
 		ListensOnPort:  "8000",
@@ -141,7 +139,7 @@ func TestStatsDifferentID(t *testing.T) {
 		ClientID:       "ID0",
 	})
 	stats.AddPacket()
-	stats.AddAsset(&asset.Asset{
+	stats.AddAsset(&Asset{
 		IPv4Address:    "10.0.0.2",
 		IPv6Address:    "0000:0000:0000:0000:0000:FFFF:0A00:0002",
 		ListensOnPort:  "9000",
@@ -179,7 +177,7 @@ func TestStatsSameEverything(t *testing.T) {
 	// Two observations from the same device.
 	stats := NewStats()
 	stats.AddPacket()
-	stats.AddAsset(&asset.Asset{
+	stats.AddAsset(&Asset{
 		IPv4Address:    "10.0.0.1",
 		IPv6Address:    "0000:0000:0000:0000:0000:FFFF:0A00:0001",
 		ListensOnPort:  "8000",
@@ -191,7 +189,7 @@ func TestStatsSameEverything(t *testing.T) {
 		ClientID:       "ID0",
 	})
 	stats.AddPacket()
-	stats.AddAsset(&asset.Asset{
+	stats.AddAsset(&Asset{
 		IPv4Address:    "10.0.0.1",
 		IPv6Address:    "0000:0000:0000:0000:0000:FFFF:0A00:0001",
 		ListensOnPort:  "8000",

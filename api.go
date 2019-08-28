@@ -18,7 +18,7 @@ Helpful documentation about requests in Go:
 - http://polyglot.ninja/golang-making-http-requests/
 */
 
-package main
+package tapirx
 
 import (
 	"bytes"
@@ -27,8 +27,6 @@ import (
 	"log"
 	"net/http"
 	"time"
-
-	"github.com/virtalabs/tapirx/asset"
 )
 
 // An APIClient holds state and credentials related to uploading Asset
@@ -65,7 +63,7 @@ func NewAPIClient(
 // Upload sends asset information to a REST API.
 //
 // Returns response data, if any, and error, either of which may be nil.
-func (apiClient *APIClient) Upload(asset *asset.Asset) (map[string]interface{}, error) {
+func (apiClient *APIClient) Upload(asset *Asset) (map[string]interface{}, error) {
 	asset.ClientID = apiClient.clientID
 
 	// Handle API throttling.  If the number of outstanding requests exceeds the

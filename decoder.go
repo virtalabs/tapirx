@@ -3,7 +3,7 @@
 Decoder definitions.
 */
 
-package decoder
+package tapirx
 
 import (
 	"fmt"

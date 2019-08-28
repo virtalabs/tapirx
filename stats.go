@@ -3,14 +3,12 @@
 Track stats of packets decoded.
 */
 
-package main
+package tapirx
 
 import (
 	"encoding/json"
 	"sort"
 	"sync"
-
-	"github.com/virtalabs/tapirx/asset"
 )
 
 // Stats stores statistics about observed Assets and packets.
@@ -66,7 +64,7 @@ func (s *Stats) AddError(err error) {
 
 // AddAsset reports that a valid packet with identifying information has been
 // seen.
-func (s *Stats) AddAsset(asset *asset.Asset) {
+func (s *Stats) AddAsset(asset *Asset) {
 	s.Lock()
 	defer s.Unlock()
 	if asset.IPv4Address != "" {

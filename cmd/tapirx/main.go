@@ -60,7 +60,7 @@ import (
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
-	"github.com/virtalabs/tapirx/asset"
+	"github.com/virtalabs/tapirx"
 )
 
 var (
@@ -83,12 +83,12 @@ func main() {
 	flag.Parse()
 
 	if *version {
-		fmt.Printf("%s %s\n", ProductName, Version)
+		fmt.Printf("%s %s\n", tapirx.ProductName, tapirx.Version)
 		os.Exit(0)
 	}
 
 	if *listIfaces {
-		ListInterfaces()
+		tapirx.ListInterfaces()
 		os.Exit(0)
 	}
 
@@ -120,7 +120,7 @@ func main() {
 
 	// Set up an ARP table to map between IP addresses and MAC addresses throughout the course of
 	// the capture. Expire entries older than 4 hours (default on most Cisco devices) every minute.
-	arpTable := NewArpTable(4*time.Hour, 1*time.Minute)
+	arpTable := tapirx.NewArpTable(4*time.Hour, 1*time.Minute)
 
 	done := make(chan struct{})
 	cleanedUp := false
@@ -147,7 +147,7 @@ func main() {
 	//
 	// The stages are set up in reverse order so that each pipeline stage is ready to receive before
 	// anything tries to send to it.
-	assets := asset.NewAssetSet()
+	assets := tapirx.NewAssetSet()
 	go assets.ConsumeAssets()
 
 	pchan := gopacket.NewPacketSource(handle, handle.LinkType()).Packets() // source
@@ -158,7 +158,7 @@ func main() {
 	var wg sync.WaitGroup
 	for i := 0; i < *numWorkers; i++ {
 		wg.Add(1)
-		go readPacketsWithDecodingLayerParser(done, pchan, assets.C, arpTable, &wg)
+		go tapirx.ReadPacketsWithDecodingLayerParser(done, pchan, assets.C, arpTable, &wg)
 	}
 	wg.Wait()
 }

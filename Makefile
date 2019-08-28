@@ -14,10 +14,10 @@ deps:
 install: ${GOPATH}/bin/$(EXENAME)
 
 test:
-	go test
+	go test -v ./...
 
 ${GOPATH}/bin/$(EXENAME): $(GOFILES)
-	go install $(LDFLAGS)
+	cd cmd/$(EXENAME) && go install $(LDFLAGS)
 
 clean:
 	go clean

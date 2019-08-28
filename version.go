@@ -1,4 +1,4 @@
-package main
+package tapirx
 
 // ProductName is the human-readable name to be shown to the user.
 const ProductName = "Tapirx"

@@ -3,7 +3,7 @@
 Network interface handling.
 */
 
-package main
+package tapirx
 
 import (
 	"fmt"

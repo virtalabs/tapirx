@@ -3,7 +3,7 @@
 ARP table data structures and functions.
 */
 
-package main
+package tapirx
 
 import (
 	"fmt"

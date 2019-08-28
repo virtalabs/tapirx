@@ -1,6 +1,6 @@
 // Unit tests for HL7 v2 decoding
 
-package decoder
+package tapirx
 
 import (
 	"io/ioutil"
@@ -23,7 +23,7 @@ func init() {
 }
 
 func TestHL7DecodeFile(t *testing.T) {
-	handle, err := pcap.OpenOffline("../testdata/HL7-ADT-UDI-PRT.pcap")
+	handle, err := pcap.OpenOffline("testdata/HL7-ADT-UDI-PRT.pcap")
 	if err != nil {
 		panic(err)
 	}

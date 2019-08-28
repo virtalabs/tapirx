@@ -1,7 +1,7 @@
 /*
 Unit tests for Asset functions.
 */
-package asset
+package tapirx
 
 import (
 	"io/ioutil"

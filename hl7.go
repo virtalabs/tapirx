@@ -8,7 +8,7 @@ specification, which is long and boring.  A quick overview is at
 https://www.fknsrs.biz/blog/golang-hl7-library.html.
 */
 
-package decoder
+package tapirx
 
 import (
 	"bytes"
