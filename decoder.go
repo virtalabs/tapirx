@@ -28,21 +28,26 @@ type PayloadDecoder interface {
 	String() string
 }
 
+// GenericDecoder is a decoder that does nothing.
 type GenericDecoder struct {
 }
 
+// Name returns "GenericDecoder." GenericDecoder implements PayloadDecoder.
 func (d *GenericDecoder) Name() string {
 	return "GenericDecoder"
 }
 
+// Initialize does nothing. GenericDecoder implements PayloadDecoder.
 func (d *GenericDecoder) Initialize() error {
 	return nil
 }
 
+// String returns "GenericDecoder." GenericDecoder implements PayloadDecoder.
 func (d *GenericDecoder) String() string {
 	return d.Name()
 }
 
+// DecodePayload does nothing. GenericDecoder implements PayloadDecoder.
 func (d *GenericDecoder) DecodePayload(app *gopacket.ApplicationLayer) (*DecodingResult, error) {
 	payloadBytes := (*app).Payload()
 	fmt.Printf("GenericDecoder got payload of %d bytes\n", len(payloadBytes))

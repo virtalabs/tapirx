@@ -14,8 +14,8 @@ import (
 	"github.com/google/gopacket/layers"
 )
 
-// readPacketsWithDecodingLayerParser reads packets from channel pchan until it is closed or there
-// is an error.
+// ReadPacketsWithDecodingLayerParser reads packets from channel pchan until it
+// is closed or there is an error.
 func ReadPacketsWithDecodingLayerParser(
 	done chan struct{},
 	pchan chan gopacket.Packet,
