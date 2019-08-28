@@ -2,12 +2,13 @@ version: 2
 jobs:
   build:
     docker:
-      - image: virtalabs/tapirx-golang-1.11:0.0.1
+      - image: circleci/golang:latest
 
     working_directory: /go/src/github.com/virtalabs/tapirx
 
     steps:
       - checkout
+      - run: sudo apt-get install -y libpcap-dev
       - run: go get -v -t -d ./...
       - run: go get -v -u golang.org/x/lint/golint
       - run: go test -v ./...
