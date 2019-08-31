@@ -18,7 +18,7 @@ install:
 	go install $(LDFLAGS) $(COMMANDS)
 
 test:
-	go test -v ./...
+	go test -v -race ./...
 
 clean:
 	go clean
