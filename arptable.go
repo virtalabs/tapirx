@@ -41,6 +41,8 @@ func (a *ArpTable) Add(hwAddr net.HardwareAddr, ip net.IP) {
 
 // Length returns the number of entries (the number of distinct hardware addresses) in the ARP table
 func (a *ArpTable) Length() int {
+	a.Lock()
+	defer a.Unlock()
 	return len(a.arpTable)
 }
 
