@@ -55,7 +55,8 @@ func TestAPISimple(t *testing.T) {
 	})
 
 	// Make a test request
-	result, err := apiClient.Upload(&Asset{
+	as := NewAssetSet()
+	as.Add(&Asset{
 		IPv4Address:    "10.0.0.1",
 		IPv6Address:    "0000:0000:0000:0000:0000:FFFF:0A00:0001",
 		ListensOnPort:  "8000",
@@ -66,17 +67,10 @@ func TestAPISimple(t *testing.T) {
 		LastSeen:       time.Time{},
 		ClientID:       "ID0",
 	})
-
-	// Check output and errors
+	err := apiClient.EmitSet(as)
 	if err != nil {
-		panic(err)
+		t.Error(err)
 	}
-	if message, ok := result["message"]; !ok {
-		t.Errorf("'message' key not in JSON response")
-	} else if message != "Dummy message." {
-		t.Errorf("'message' value in JSON response is not expected value.")
-	}
-
 }
 
 func TestAPIThrottling(t *testing.T) {
@@ -98,7 +92,7 @@ func TestAPIThrottling(t *testing.T) {
 	errors := make(chan error, 10)
 	for i := 0; i < cap(errors); i++ {
 		go func() {
-			_, err := apiClient.Upload(&Asset{})
+			err := apiClient.EmitSet(NewAssetSet())
 			errors <- err
 		}()
 	}
@@ -113,7 +107,8 @@ func TestAPIThrottling(t *testing.T) {
 	}
 
 	// Expect all uploads to fail except one
-	if throttlingFailures != cap(errors)-1 {
-		t.Errorf("Expected exactly 1 throttling failure")
+	expectedFailures := cap(errors) - 1
+	if throttlingFailures != expectedFailures {
+		t.Errorf("Expected exactly %d throttling failure; got %d", expectedFailures, throttlingFailures)
 	}
 }
