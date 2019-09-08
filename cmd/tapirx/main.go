@@ -71,8 +71,8 @@ var (
 	numWorkers = flag.Int("workers", runtime.NumCPU(),
 		"Number of concurrent processes decoding packets")
 	arpMaxAge    = flag.Duration("arp-max-age", 4*time.Hour, "Maximum age of ARP table entries")
-	emitInterval = flag.Int("emit-interval", 10,
-		"How often (in seconds) to emit assets to an API endpoint")
+	emitInterval = flag.Duration("emit-interval", 10*time.Second,
+		"How often to emit assets")
 	version = flag.Bool("version", false, "Show version information and exit")
 
 	logger *log.Logger
@@ -149,6 +149,24 @@ func main() {
 	// anything tries to send to it.
 	assets := tapirx.NewAssetSet()
 	go assets.ConsumeAssets()
+
+	// Create an AssetEmitter that will emit Assets somewhere; otherwise emit to log
+	var emitter tapirx.AssetEmitter
+	// XXX choose an emitter based on flags
+	// emitter = tapirx.LoggingEmitter{}
+	emitter, err = tapirx.NewCSVEmitter("foo.csv")
+	if err != nil {
+		logger.Fatalln("Invalid emitter")
+	}
+	periodicEmit := time.NewTicker(*emitInterval / 10)
+	go func() {
+		for range periodicEmit.C {
+			fmt.Println("Emitting!")
+			emitter.EmitSet(assets)
+		}
+	}()
+	defer emitter.EmitSet(assets)
+	defer emitter.Close()
 
 	pchan := gopacket.NewPacketSource(handle, handle.LinkType()).Packets() // source
 
