@@ -75,6 +75,10 @@ var (
 		"How often to emit assets")
 	version = flag.Bool("version", false, "Show version information and exit")
 
+	csvOutput = flag.String("csv", "", "CSV file to write")
+	apiOutput = flag.String("apiUrl", "", "REST API endpoint to submit to")
+	apiToken  = flag.String("apiToken", "", "API token to submit to REST API endpoint")
+
 	logger *log.Logger
 )
 
@@ -154,9 +158,16 @@ func main() {
 	var emitter tapirx.AssetEmitter
 	// XXX choose an emitter based on flags
 	// emitter = tapirx.LoggingEmitter{}
-	emitter, err = tapirx.NewCSVEmitter("foo.csv")
-	if err != nil {
-		logger.Fatalln("Invalid emitter")
+	if *csvOutput != "" {
+		emitter, err = tapirx.NewCSVEmitter(*csvOutput)
+		if err != nil {
+			logger.Fatalln("Invalid emitter")
+		}
+	} else if *apiOutput != "" {
+		emitter = tapirx.NewAPIClient(*apiOutput, *apiToken, tapirx.Version,
+			3, true)
+	} else {
+		emitter = tapirx.LoggingEmitter{}
 	}
 	periodicEmit := time.NewTicker(*emitInterval / 10)
 	go func() {

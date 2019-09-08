@@ -35,4 +35,6 @@ func (le LoggingEmitter) EmitSet(as *AssetSet) error {
 }
 
 // Close does nothing.
-func (le LoggingEmitter) Close() {}
+func (le LoggingEmitter) Close() error {
+	return nil
+}
