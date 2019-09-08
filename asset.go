@@ -2,6 +2,7 @@ package tapirx
 
 import (
 	"encoding/csv"
+	"fmt"
 	"os"
 	"sync"
 	"time"
@@ -20,6 +21,17 @@ type Asset struct {
 	Provenance     string    `json:"provenance"`
 	LastSeen       time.Time `json:"last_seen"`
 	ClientID       string    `json:"client_id"`
+}
+
+func (a *Asset) String() string {
+	addrs := ""
+	if a.IPv4Address != "" {
+		addrs += " @" + a.IPv4Address
+	}
+	if a.IPv6Address != "" {
+		addrs += " @" + a.IPv6Address
+	}
+	return fmt.Sprintf("<Asset %s%s>", a.MACAddress, addrs)
 }
 
 // AssetCSVWriter contains the state needed to write to a CSV file
