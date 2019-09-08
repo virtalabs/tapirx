@@ -165,8 +165,10 @@ func main() {
 			emitter.EmitSet(assets)
 		}
 	}()
-	defer emitter.EmitSet(assets)
-	defer emitter.Close()
+	defer func() {
+		emitter.EmitSet(assets)
+		emitter.Close()
+	}()
 
 	pchan := gopacket.NewPacketSource(handle, handle.LinkType()).Packets() // source
 

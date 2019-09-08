@@ -7,6 +7,7 @@ package tapirx
 
 import (
 	"encoding/csv"
+	"log"
 	"os"
 	"sync"
 )
@@ -53,6 +54,7 @@ func (c *CSVEmitter) Emit(asset *Asset) error {
 func (c *CSVEmitter) EmitSet(as *AssetSet) error {
 	as.Lock()
 	defer as.Unlock()
+	log.Printf("Emitting %d assets.\n", len(as.Assets))
 	for _, asset := range as.Assets {
 		if err := c.Emit(asset); err != nil {
 			return err

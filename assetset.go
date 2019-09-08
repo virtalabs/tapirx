@@ -44,6 +44,11 @@ func (a *AssetSet) ConsumeAssets() {
 	}
 }
 
+// Len returns the number of Assets in the AssetSet.
+func (a *AssetSet) Len() int {
+	return len(a.Assets)
+}
+
 // NewAssetSet creates a new empty AssetSet.
 func NewAssetSet() *AssetSet {
 	return &AssetSet{
