@@ -122,6 +122,7 @@ func main() {
 	sequential := flag.Bool("sequential", false, "Process packets sequentially")
 	csvFilename := flag.String("csv", "", "Stream assets to CSV file")
 	listIfaces := flag.Bool("interfaces", false, "List all network interfaces and exit")
+	mqttURL := flag.String("mqtt", "", "Send to MQTT URI")
 	flag.Parse()
 
 	setupLogging(*debug)
@@ -181,6 +182,15 @@ func main() {
 		defer assetCSVWriter.Close()
 	}
 
+	// Configure NQTT writer module
+	mqttWriter, err := NewMQTTWriter(*mqttURL)
+	if err != nil {
+		panic(err)
+	}
+	if mqttWriter != nil {
+		defer mqttWriter.Close()
+	}
+
 	// A WaitGroup will let us wait until all threads have finished before exit
 	// http://goinbigdata.com/golang-wait-for-all-goroutines-to-finish/
 	var waitGroup sync.WaitGroup
@@ -206,9 +216,9 @@ func main() {
 		}
 		waitGroup.Add(1)
 		if *sequential {
-			handlePacket(packet, appLayerDecoders, apiClient, assetCSVWriter, &waitGroup)
+			handlePacket(packet, appLayerDecoders, apiClient, assetCSVWriter, mqttWriter, &waitGroup)
 		} else {
-			go handlePacket(packet, appLayerDecoders, apiClient, assetCSVWriter, &waitGroup)
+			go handlePacket(packet, appLayerDecoders, apiClient, assetCSVWriter, mqttWriter, &waitGroup)
 		}
 		nPackets++
 	}

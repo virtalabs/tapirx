@@ -114,6 +114,7 @@ func handlePacket(
 	appLayerDecoders []PayloadDecoder,
 	apiClient *APIClient,
 	assetCSVWriter *AssetCSVWriter,
+	mqttwriter *MQTTWriter,
 	waitGroup *sync.WaitGroup,
 ) {
 	if waitGroup != nil {
@@ -163,5 +164,10 @@ func handlePacket(
 		} else {
 			stats.AddUpload()
 		}
+	}
+
+	// Send to MQTT if requested by the user.
+	if mqttwriter != nil {
+		_ = mqttwriter.Publish(asset)
 	}
 }
