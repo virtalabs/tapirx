@@ -20,8 +20,7 @@ import (
 	// import layers to run its init function
 	_ "github.com/google/gopacket/layers"
 
-	// Mirror of "fknsrs.biz/p/hl7"
-	"github.com/virtalabs/hl7"
+	"fknsrs.biz/p/hl7"
 )
 
 // HL7Query represents a compiled query and its corresponding output field.
