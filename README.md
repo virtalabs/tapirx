@@ -16,7 +16,7 @@ discovery out of the box:
 
 [Install Go](https://golang.org/doc/install), then install Tapirx:
 
-    $ go get -u -v github.com/virtalabs/tapirx
+    $ go install github.com/virtalabs/tapirx@latest
 
 If you already have Tapirx installed, the above command will update you to the
 latest version.
