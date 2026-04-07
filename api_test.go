@@ -32,7 +32,7 @@ func setup() func() {
 	server = httptest.NewServer(mux)
 
 	apiURL := server.URL + "/api" // Base URL automatically chosen by httptest
-	apiClient = NewAPIClient(apiURL, "", "", 1, true)
+	apiClient = NewAPIClient(apiURL, "", "", "PUT", 1, true)
 	stats = *NewStats()
 
 	// The API client calls the logger global.  Initialize it.

@@ -31,11 +31,12 @@ import (
 // An APIClient holds state and credentials related to uploading Asset
 // information to a REST API endpoint.
 type APIClient struct {
-	url       string
-	authToken string
-	clientID  string
-	enabled   bool
-	semaphore chan bool
+	url        string
+	authToken  string
+	clientID   string
+	httpMethod string
+	enabled    bool
+	semaphore  chan bool
 }
 
 // NewAPIClient creates a new APIClient.
@@ -43,6 +44,7 @@ func NewAPIClient(
 	apiURL string,
 	apiToken string,
 	clientID string,
+	httpMethod string,
 	apiLimit int,
 	enabled bool,
 ) *APIClient {
@@ -50,6 +52,7 @@ func NewAPIClient(
 	apiClient.url = apiURL
 	apiClient.authToken = apiToken
 	apiClient.clientID = clientID
+	apiClient.httpMethod = httpMethod
 	apiClient.enabled = enabled
 
 	// A channel will act as a semaphore with the desired level of concurrency
@@ -85,7 +88,7 @@ func (apiClient *APIClient) Upload(asset *Asset) (map[string]interface{}, error)
 		Timeout: time.Duration(5 * time.Second),
 	}
 	request, err := http.NewRequest(
-		http.MethodPost,
+		apiClient.httpMethod,
 		apiClient.url,
 		bytes.NewBuffer(bytesRepresentation),
 	)
