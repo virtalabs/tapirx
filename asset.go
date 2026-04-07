@@ -11,12 +11,12 @@ import (
 //
 // Each field is annotated with its JSON field name.
 type Asset struct {
-	IPv4Address    string    `json:"ipv4_address"`
+	IPv4Address    string    `json:"ip_address"`
 	IPv6Address    string    `json:"ipv6_address"`
 	ListensOnPort  string    `json:"open_port_tcp"`
 	ConnectsToPort string    `json:"connect_port_tcp"`
 	MACAddress     string    `json:"mac_address"`
-	Identifier     string    `json:"identifier"`
+	Identifier     string    `json:"name"`
 	Provenance     string    `json:"provenance"`
 	LastSeen       time.Time `json:"last_seen"`
 	ClientID       string    `json:"client_id"`
@@ -54,12 +54,12 @@ func NewAssetCSVWriter(filename string) (*AssetCSVWriter, error) {
 
 	// Write CSV header
 	header := []string{
-		"ipv4_address",
+		"ip_address",
 		"ipv6_address",
 		"open_port_tcp",
 		"connect_port_tcp",
 		"mac_address",
-		"identifier",
+		"name",
 		"provenance",
 		"last_seen",
 		"client_id",
