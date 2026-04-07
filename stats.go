@@ -7,6 +7,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"sort"
 	"sync"
 )
@@ -74,8 +75,8 @@ func (s *Stats) AddAsset(asset *Asset) {
 	if asset.IPv6Address != "" {
 		s.IPv6Addresses[asset.IPv6Address]++
 	}
-	if asset.ListensOnPort != "" {
-		s.Ports[asset.ListensOnPort]++
+	for _, port := range asset.ListensOnPorts {
+		s.Ports[fmt.Sprintf("%d", port)]++
 	}
 	if asset.ConnectsToPort != "" {
 		s.Ports[asset.ConnectsToPort]++

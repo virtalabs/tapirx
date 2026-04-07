@@ -58,7 +58,7 @@ func decodeLayers(packet gopacket.Packet, asset *Asset) error {
 				// then it is *initiating* a connection to the *destination*
 				// port (i.e., it's the "client" side of a new connection).
 				if tcp.ACK {
-					asset.ListensOnPort = tcp.SrcPort.String()
+					asset.ListensOnPorts = []int{int(tcp.SrcPort)}
 					asset.Provenance = "TCP handshake"
 					stats.AddLayer("TCP/handshake")
 					logger.Printf("  TCP server on %s\n", tcp.SrcPort)

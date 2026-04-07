@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/csv"
+	"fmt"
 	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -13,7 +15,7 @@ import (
 type Asset struct {
 	IPv4Address    string    `json:"ip_address"`
 	IPv6Address    string    `json:"ipv6_address"`
-	ListensOnPort  string    `json:"open_port_tcp"`
+	ListensOnPorts []int     `json:"open_ports_tcp"`
 	ConnectsToPort string    `json:"connect_port_tcp"`
 	MACAddress     string    `json:"mac_address"`
 	Identifier     string    `json:"name"`
@@ -56,7 +58,7 @@ func NewAssetCSVWriter(filename string) (*AssetCSVWriter, error) {
 	header := []string{
 		"ip_address",
 		"ipv6_address",
-		"open_port_tcp",
+		"open_ports_tcp",
 		"connect_port_tcp",
 		"mac_address",
 		"name",
@@ -94,9 +96,14 @@ func (w *AssetCSVWriter) Append(asset *Asset) error {
 	defer w.Unlock()
 
 	// Write CSV row
+	ports := make([]string, len(asset.ListensOnPorts))
+	for i, p := range asset.ListensOnPorts {
+		ports[i] = fmt.Sprintf("%d", p)
+	}
 	row := []string{
 		asset.IPv4Address,
 		asset.IPv6Address,
+		strings.Join(ports, ";"),
 		asset.ConnectsToPort,
 		asset.MACAddress,
 		asset.Identifier,

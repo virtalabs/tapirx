@@ -62,7 +62,7 @@ func TestAPISimple(t *testing.T) {
 	result, err := apiClient.Upload(&Asset{
 		"10.0.0.1",
 		"0000:0000:0000:0000:0000:FFFF:0A00:0001",
-		"8000",
+		[]int{8000},
 		"2575",
 		"11:22:33:44:55:66",
 		"Hospira Plum A+",
