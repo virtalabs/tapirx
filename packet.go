@@ -157,7 +157,9 @@ func handlePacket(
 	// Upload to API if requested by the user.  If the user did not specify a
 	// URL with a command line flag, the URL will be empty.
 	if apiClient.enabled {
-		if _, err := apiClient.Upload(asset); err != nil {
+		if asset.MACAddress == "" {
+			logger.Println("Skipping API upload: no MAC address")
+		} else if _, err := apiClient.Upload(asset); err != nil {
 			logger.Println("API Upload error:", err)
 			stats.AddUploadError(err)
 		} else {
