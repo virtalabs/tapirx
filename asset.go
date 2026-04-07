@@ -9,6 +9,14 @@ import (
 	"time"
 )
 
+// NewAsset creates an Asset with safe defaults (e.g., empty slice instead of nil
+// for ListensOnPorts so it serializes as [] rather than null in JSON).
+func NewAsset() *Asset {
+	return &Asset{
+		ListensOnPorts: []int{},
+	}
+}
+
 // An Asset represents an observation of one endpoint seen in network traffic.
 //
 // Each field is annotated with its JSON field name.

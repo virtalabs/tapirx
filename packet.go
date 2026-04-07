@@ -121,7 +121,7 @@ func handlePacket(
 	}
 
 	// Initialize an empty Asset to store information learned during dissection
-	asset := &Asset{}
+	asset := NewAsset()
 	asset.LastSeen = time.Now()
 
 	// Decode packet and update statistics
