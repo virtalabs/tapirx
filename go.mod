@@ -1,6 +1,6 @@
 module github.com/virtalabs/tapirx
 
-go 1.26.1
+go 1.26
 
 require (
 	github.com/google/gopacket v1.1.19
