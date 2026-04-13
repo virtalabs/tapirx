@@ -22,7 +22,7 @@ func TestStatsString(t *testing.T) {
 	stats.AddAsset(&Asset{
 		testIP,
 		"0000:0000:0000:0000:0000:FFFF:0A00:0001",
-		"8000",
+		[]int{8000},
 		"2575",
 		testMAC,
 		"Hospira Plum A+",
@@ -80,7 +80,7 @@ func TestStatsSameID(t *testing.T) {
 	stats.AddAsset(&Asset{
 		"10.0.0.1",
 		"0000:0000:0000:0000:0000:FFFF:0A00:0001",
-		"8000",
+		[]int{8000},
 		"2575",
 		"11:22:33:44:55:66",
 		"Hospira Plum A+",
@@ -92,7 +92,7 @@ func TestStatsSameID(t *testing.T) {
 	stats.AddAsset(&Asset{
 		"10.0.0.2",
 		"0000:0000:0000:0000:0000:FFFF:0A00:0002",
-		"8000",
+		[]int{8000},
 		"2575",
 		"11:22:33:44:55:67",
 		"Hospira Plum A+",
@@ -130,7 +130,7 @@ func TestStatsDifferentID(t *testing.T) {
 	stats.AddAsset(&Asset{
 		"10.0.0.1",
 		"0000:0000:0000:0000:0000:FFFF:0A00:0001",
-		"8000",
+		[]int{8000},
 		"2575",
 		"11:22:33:44:55:66",
 		"Hospira Plum A+",
@@ -142,7 +142,7 @@ func TestStatsDifferentID(t *testing.T) {
 	stats.AddAsset(&Asset{
 		"10.0.0.2",
 		"0000:0000:0000:0000:0000:FFFF:0A00:0002",
-		"9000",
+		[]int{9000},
 		"2575",
 		"11:22:33:44:55:67",
 		"Alaris 8000",
@@ -180,7 +180,7 @@ func TestStatsSameEverything(t *testing.T) {
 	stats.AddAsset(&Asset{
 		"10.0.0.1",
 		"0000:0000:0000:0000:0000:FFFF:0A00:0001",
-		"8000",
+		[]int{8000},
 		"2575",
 		"11:22:33:44:55:66",
 		"Hospira Plum A+",
@@ -192,7 +192,7 @@ func TestStatsSameEverything(t *testing.T) {
 	stats.AddAsset(&Asset{
 		"10.0.0.1",
 		"0000:0000:0000:0000:0000:FFFF:0A00:0001",
-		"8000",
+		[]int{8000},
 		"2575",
 		"11:22:33:44:55:66",
 		"Hospira Plum A+",

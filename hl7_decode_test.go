@@ -108,7 +108,7 @@ func getNRecordString(nrec int) string {
 	}
 	alphas := make([]string, nrec)
 	for i := 0; i < nrec; i++ {
-		alphas[i] = string('A' + i)
+		alphas[i] = string(rune('A' + i))
 	}
 	return strings.Join(alphas, "|")
 }

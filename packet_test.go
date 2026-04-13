@@ -33,7 +33,7 @@ func TestPacketParseSimple(t *testing.T) {
 
 	// Initialize objects later used by handlePacket
 	stats = *NewStats()
-	apiClient := NewAPIClient("", "", "", 1, false)
+	apiClient := NewAPIClient("", "", "", "PUT", 1, false)
 	assetCSVWriter, err := NewAssetCSVWriter("")
 	if err != nil {
 		panic(err)

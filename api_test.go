@@ -32,7 +32,7 @@ func setup() func() {
 	server = httptest.NewServer(mux)
 
 	apiURL := server.URL + "/api" // Base URL automatically chosen by httptest
-	apiClient = NewAPIClient(apiURL, "", "", 1, true)
+	apiClient = NewAPIClient(apiURL, "", "", "PUT", 1, true)
 	stats = *NewStats()
 
 	// The API client calls the logger global.  Initialize it.
@@ -62,7 +62,7 @@ func TestAPISimple(t *testing.T) {
 	result, err := apiClient.Upload(&Asset{
 		"10.0.0.1",
 		"0000:0000:0000:0000:0000:FFFF:0A00:0001",
-		"8000",
+		[]int{8000},
 		"2575",
 		"11:22:33:44:55:66",
 		"Hospira Plum A+",

@@ -120,9 +120,15 @@ func main() {
 	version := flag.Bool("version", false, "Show version information and exit")
 	packetLimit := flag.Int("limit", 0, "Exit after N packets, 0 for unlimited")
 	sequential := flag.Bool("sequential", false, "Process packets sequentially")
+	httpVerb := flag.String("httpverb", "PUT", "HTTP method for API upsert (PUT or POST)")
 	csvFilename := flag.String("csv", "", "Stream assets to CSV file")
 	listIfaces := flag.Bool("interfaces", false, "List all network interfaces and exit")
 	flag.Parse()
+
+	if *httpVerb != "PUT" && *httpVerb != "POST" {
+		fmt.Fprintf(os.Stderr, "Invalid -httpverb %q: must be PUT or POST\n", *httpVerb)
+		os.Exit(1)
+	}
 
 	setupLogging(*debug)
 	stats = *NewStats()
@@ -170,7 +176,7 @@ func main() {
 
 	// Configure the API client module
 	apiClientEnabled := *apiURL != ""
-	apiClient := NewAPIClient(*apiURL, *apiToken, *clientID, *apiLimit, apiClientEnabled)
+	apiClient := NewAPIClient(*apiURL, *apiToken, *clientID, *httpVerb, *apiLimit, apiClientEnabled)
 
 	// Configure CSV writer module
 	assetCSVWriter, err := NewAssetCSVWriter(*csvFilename)
